@@ -9,7 +9,7 @@ ui <- dashboardPage(
     sidebarMenu(
       menuItem("Accueil", tabName = "accueil", icon = icon("home")),
       menuItem("Statistiques Descriptives", tabName = "desc", icon = icon("bar-chart")),
-      menuItem("IMC & Distribution", tabName = "imc", icon = icon("chart-line")),
+      menuItem("Niveau d'Obésité", tabName = "obesite", icon = icon("chart-line")),
       menuItem("Corrélations", tabName = "corr", icon = icon("link")),
       menuItem("ACP", tabName = "pca", icon = icon("project-diagram")),
       menuItem("ANOVA", tabName = "anova", icon = icon("flask")),
@@ -27,7 +27,9 @@ ui <- dashboardPage(
             p("Nombre de variables:", ncol(data)),
             hr(),
             h4("Variables clés:"),
-            p("✓ IMC (calculé): Poids_kg / Height²"),
+            p("✓ Variable cible : Niveau_Obesite (Insuffisance pondérale, Normal, Surpoids, Obésité), aussi codée en Score_Obesite (1 à 4)"),
+            p("✓ Pas de poids dans le jeu de données, donc pas d'IMC calculable"),
+            p("✓ Scores ordinaux : Frequence_Legumes (1-3), Repas_Principaux (1-3), Grignotage (1-4), Consommation_Liquide (1-3), Activite_Physique (1-5), Temps_Ecrans (1-3)"),
             p("✓ Variables numériques:", paste(numeric_vars, collapse = ", ")),
             p("✓ Variables catégoriques:", paste(categorical_vars, collapse = ", "))
           )
@@ -59,32 +61,35 @@ ui <- dashboardPage(
         )
       ),
 
-      # TAB 3: IMC & Distribution
-      tabItem(tabName = "imc",
+      # TAB 3: Niveau d'Obésité
+      tabItem(tabName = "obesite",
         fluidRow(
-          box(title = "Statistiques IMC", width = 6, solidHeader = TRUE, status = "success",
-            verbatimTextOutput("imc_summary")
+          box(title = "Répartition des Niveaux", width = 5, solidHeader = TRUE, status = "success",
+            verbatimTextOutput("obesity_summary")
           ),
-          box(title = "IMC par Catégorie d'Obésité", width = 6, solidHeader = TRUE, status = "success",
-            DTOutput("imc_by_obesity")
+          box(title = "Profil Moyen par Niveau", width = 7, solidHeader = TRUE, status = "success",
+            DTOutput("profile_by_obesity")
           )
         ),
         fluidRow(
-          box(title = "Distribution de l'IMC", width = 6, solidHeader = TRUE,
-            plotOutput("imc_hist")
+          box(title = "Effectifs par Niveau", width = 6, solidHeader = TRUE,
+            plotOutput("obesity_bar")
           ),
-          box(title = "IMC vs Poids", width = 6, solidHeader = TRUE,
-            plotlyOutput("imc_weight")
+          box(title = "Taille vs Âge", width = 6, solidHeader = TRUE,
+            plotlyOutput("age_height_scatter")
           )
         ),
         fluidRow(
-          box(title = "IMC par Genre", width = 12, solidHeader = TRUE,
-            plotOutput("imc_gender", height = "400px")
+          box(title = "Niveau d'Obésité par Genre", width = 12, solidHeader = TRUE,
+            plotOutput("obesity_gender", height = "400px")
           )
         ),
         fluidRow(
-          box(title = "IMC vs Obésité", width = 12, solidHeader = TRUE,
-            plotOutput("imc_obesity", height = "400px")
+          box(title = "Niveau d'Obésité selon une Variable", width = 12, solidHeader = TRUE,
+            selectInput("obesity_cross_var", "Choisir une variable:",
+                        setdiff(names(data), c("Niveau_Obesite", "Score_Obesite", "Age", "Taille_cm")),
+                        selected = "Activite_Physique"),
+            plotOutput("obesity_factor", height = "400px")
           )
         )
       ),
@@ -92,13 +97,13 @@ ui <- dashboardPage(
       # TAB 4: Corrélations
       tabItem(tabName = "corr",
         fluidRow(
-          box(title = "Matrice de Corrélation de Pearson", width = 12, solidHeader = TRUE, status = "warning",
+          box(title = "Matrice de Corrélation de Spearman", width = 12, solidHeader = TRUE, status = "warning",
             plotOutput("corr_matrix", height = "600px")
           )
         ),
         fluidRow(
-          box(title = "Corrélations avec l'IMC", width = 12, solidHeader = TRUE, status = "warning",
-            DTOutput("imc_correlations")
+          box(title = "Corrélations avec le Score d'Obésité", width = 12, solidHeader = TRUE, status = "warning",
+            DTOutput("obesity_correlations")
           )
         ),
         fluidRow(
@@ -155,7 +160,7 @@ ui <- dashboardPage(
           box(title = "ANOVA - Configuration", width = 12, solidHeader = TRUE, status = "danger",
             fluidRow(
               column(4, selectInput("anova_factor", "Variable Catégorique:", categorical_vars)),
-              column(4, selectInput("anova_response", "Variable Réponse:", numeric_vars, selected = "IMC")),
+              column(4, selectInput("anova_response", "Variable Réponse:", numeric_vars, selected = "Age")),
               column(4, actionButton("run_anova", "Exécuter ANOVA", class = "btn-danger"))
             )
           )
@@ -186,9 +191,15 @@ ui <- dashboardPage(
       tabItem(tabName = "tests",
         fluidRow(
           box(title = "Tests T", width = 12, solidHeader = TRUE, status = "info",
-            selectInput("ttest_var", "Variable à tester:", numeric_vars, selected = "IMC"),
-            selectInput("ttest_group", "Variable de groupage:", categorical_vars[c(1,3,4,5)]),
+            selectInput("ttest_var", "Variable à tester:", numeric_vars, selected = "Score_Obesite"),
+            selectInput("ttest_group", "Variable de groupage:", binary_vars),
             DTOutput("ttest_results")
+          )
+        ),
+        fluidRow(
+          box(title = "Test du Khi-deux (Indépendance avec le Niveau d'Obésité)", width = 12, solidHeader = TRUE,
+            selectInput("chi2_var", "Variable catégorique:", setdiff(categorical_vars, "Niveau_Obesite")),
+            verbatimTextOutput("chi2_test")
           )
         ),
         fluidRow(
@@ -202,7 +213,7 @@ ui <- dashboardPage(
           )
         ),
         fluidRow(
-          box(title = "Homogénéité des Variances (Levene)", width = 12, solidHeader = TRUE,
+          box(title = "Homogénéité des Variances (Levene) : Âge selon le Niveau d'Obésité", width = 12, solidHeader = TRUE,
             verbatimTextOutput("levene_test")
           )
         )
@@ -218,17 +229,17 @@ ui <- dashboardPage(
         fluidRow(
           box(title = "Pairplot Interactif", width = 12, solidHeader = TRUE,
             selectInput("pair_vars", "Sélectionner variables:", numeric_vars, multiple = TRUE,
-                       selected = c("IMC", "Age", "Poids_kg", "Consommation_Eau_Litres")),
+                       selected = c("Score_Obesite", "Age", "Taille_cm", "Activite_Physique")),
             plotOutput("pairplot", height = "700px")
           )
         ),
         fluidRow(
-          box(title = "Distribution 3D (IMC vs Age vs Poids_kg)", width = 12, solidHeader = TRUE,
+          box(title = "Distribution 3D (Âge vs Taille vs Activité physique)", width = 12, solidHeader = TRUE,
             plotlyOutput("plot_3d")
           )
         ),
         fluidRow(
-          box(title = "Violin Plot - IMC par Obésité", width = 12, solidHeader = TRUE,
+          box(title = "Violin Plot - Âge par Niveau d'Obésité", width = 12, solidHeader = TRUE,
             plotOutput("violin_obesity", height = "500px")
           )
         )

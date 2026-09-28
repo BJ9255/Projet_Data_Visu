@@ -25,8 +25,14 @@ server <- function(input, output, session) {
 
   output$dist_plots <- renderPlot({
     plots <- lapply(numeric_vars, function(var) {
+      # Scores ordinaux (peu de valeurs) : diagramme en barres ; sinon histogramme
+      geom_dist <- if (n_distinct(data[[var]]) <= 6) {
+        geom_bar(fill = "steelblue", alpha = 0.7)
+      } else {
+        geom_histogram(fill = "steelblue", bins = 30, alpha = 0.7)
+      }
       ggplot(data, aes(x = !!sym(var))) +
-        geom_histogram(fill = "steelblue", bins = 30, alpha = 0.7) +
+        geom_dist +
         labs(title = var, x = var, y = "Fréquence") +
         theme_minimal() +
         theme(plot.title = element_text(hjust = 0.5, size = 10, face = "bold"))
@@ -46,82 +52,85 @@ server <- function(input, output, session) {
             legend.position = "none")
   })
 
-  # TAB 3: IMC
-  output$imc_summary <- renderPrint({
-    cat("Statistiques de l'IMC\n")
-    cat("====================\n\n")
-    cat("Moyenne:", mean(data$IMC, na.rm = TRUE), "\n")
-    cat("Médiane:", median(data$IMC, na.rm = TRUE), "\n")
-    cat("Écart-type:", sd(data$IMC, na.rm = TRUE), "\n")
-    cat("Min:", min(data$IMC, na.rm = TRUE), "\n")
-    cat("Max:", max(data$IMC, na.rm = TRUE), "\n")
-    cat("Q1:", quantile(data$IMC, 0.25, na.rm = TRUE), "\n")
-    cat("Q3:", quantile(data$IMC, 0.75, na.rm = TRUE), "\n")
+  # TAB 3: Niveau d'obésité (le jeu n'a pas de poids : pas d'IMC)
+  output$obesity_summary <- renderPrint({
+    cat("Répartition des niveaux d'obésité\n")
+    cat("=================================\n\n")
+    effectifs <- table(data$Niveau_Obesite)
+    print(data.frame(Niveau = names(effectifs),
+                     Effectif = as.integer(effectifs),
+                     Pourcentage = round(100 * as.numeric(prop.table(effectifs)), 1)),
+          row.names = FALSE)
   })
 
-  output$imc_by_obesity <- renderDT({
-    imc_obesity <- data %>%
+  output$profile_by_obesity <- renderDT({
+    profil <- data %>%
       group_by(Niveau_Obesite) %>%
       summarise(
-        Moyenne_IMC = mean(IMC, na.rm = TRUE),
-        Médiane_IMC = median(IMC, na.rm = TRUE),
-        SD_IMC = sd(IMC, na.rm = TRUE),
         N = n(),
+        Age_moyen = round(mean(Age, na.rm = TRUE), 1),
+        Taille_moyenne = round(mean(Taille_cm, na.rm = TRUE), 1),
+        Activite_moyenne = round(mean(Activite_Physique, na.rm = TRUE), 2),
+        Ecrans_moyen = round(mean(Temps_Ecrans, na.rm = TRUE), 2),
+        Pct_Fast_Food = round(100 * mean(Fast_Food == "Oui"), 1),
+        Pct_Antecedents = round(100 * mean(Antecedents_Familiaux == "Oui"), 1),
         .groups = 'drop'
-      ) %>%
-      arrange(Moyenne_IMC)
-    datatable(imc_obesity)
+      )
+    datatable(profil, options = list(dom = 't'))
   })
 
-  output$imc_hist <- renderPlot({
-    ggplot(data, aes(x = IMC)) +
-      geom_histogram(fill = "darkgreen", bins = 40, alpha = 0.7) +
-      geom_vline(aes(xintercept = mean(IMC)), color = "red", linetype = "dashed", size = 1) +
-      geom_vline(aes(xintercept = median(IMC)), color = "blue", linetype = "dashed", size = 1) +
-      labs(title = "Distribution de l'IMC", x = "IMC", y = "Fréquence") +
-      theme_minimal()
-  })
-
-  output$imc_weight <- renderPlotly({
-    plot_ly(data, x = ~Poids_kg, y = ~IMC, color = ~Genre, type = "scatter", mode = "markers",
-            marker = list(size = 5, opacity = 0.7)) %>%
-      layout(title = "IMC vs Poids par Genre", xaxis = list(title = "Poids (kg)"),
-             yaxis = list(title = "IMC"))
-  })
-
-  output$imc_gender <- renderPlot({
-    ggplot(data, aes(x = Genre, y = IMC, fill = Genre)) +
-      geom_boxplot(alpha = 0.7) +
-      geom_jitter(width = 0.2, alpha = 0.3) +
-      labs(title = "IMC par Genre", x = "Genre", y = "IMC") +
+  output$obesity_bar <- renderPlot({
+    ggplot(data, aes(x = Niveau_Obesite, fill = Niveau_Obesite)) +
+      geom_bar(alpha = 0.7) +
+      geom_text(stat = "count", aes(label = after_stat(count)), vjust = -0.3) +
+      labs(title = "Effectifs par niveau d'obésité", x = "Niveau d'obésité", y = "Nombre") +
       theme_minimal() +
       theme(legend.position = "none")
   })
 
-  output$imc_obesity <- renderPlot({
-    ggplot(data, aes(x = reorder(Niveau_Obesite, IMC, FUN = median), y = IMC, fill = Niveau_Obesite)) +
-      geom_boxplot(alpha = 0.7) +
-      geom_jitter(width = 0.2, alpha = 0.3, size = 2) +
-      labs(title = "Distribution de l'IMC par Catégorie d'Obésité", x = "Catégorie d'Obésité", y = "IMC") +
-      theme_minimal() +
-      theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none")
+  output$age_height_scatter <- renderPlotly({
+    plot_ly(data, x = ~jitter(Age), y = ~jitter(Taille_cm), color = ~Niveau_Obesite,
+            type = "scatter", mode = "markers",
+            marker = list(size = 5, opacity = 0.7)) %>%
+      layout(title = "Taille vs Âge par niveau d'obésité", xaxis = list(title = "Âge"),
+             yaxis = list(title = "Taille (cm)"))
   })
 
-  # TAB 4: Corrélations
+  output$obesity_gender <- renderPlot({
+    ggplot(data, aes(x = Genre, fill = Niveau_Obesite)) +
+      geom_bar(position = "fill", alpha = 0.8) +
+      scale_y_continuous(labels = scales::percent) +
+      labs(title = "Niveau d'obésité par genre", x = "Genre", y = "Proportion", fill = "Niveau") +
+      theme_minimal()
+  })
+
+  output$obesity_factor <- renderPlot({
+    var <- input$obesity_cross_var
+    ggplot(data, aes(x = factor(!!sym(var)), fill = Niveau_Obesite)) +
+      geom_bar(position = "fill", alpha = 0.8) +
+      scale_y_continuous(labels = scales::percent) +
+      labs(title = paste("Niveau d'obésité selon", var), x = var, y = "Proportion", fill = "Niveau") +
+      theme_minimal() +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  })
+
+  # TAB 4: Corrélations (Spearman : la plupart des variables sont des scores ordinaux)
   output$corr_matrix <- renderPlot({
     data_numeric <- data[, numeric_vars]
-    corr_matrix <- cor(data_numeric, use = "complete.obs")
+    corr_matrix <- cor(data_numeric, use = "complete.obs", method = "spearman")
     corrplot(corr_matrix, method = "circle", type = "upper", tl.cex = 0.8,
              addCoef.col = "black", number.cex = 0.7)
   })
 
-  output$imc_correlations <- renderDT({
+  output$obesity_correlations <- renderDT({
     data_numeric <- data[, numeric_vars]
-    corr_with_imc <- cor(data_numeric, use = "complete.obs")[, "IMC"]
+    corr_with_score <- cor(data_numeric, use = "complete.obs", method = "spearman")[, "Score_Obesite"]
     corr_df <- data.frame(
-      Variable = names(corr_with_imc),
-      Corrélation = as.numeric(corr_with_imc)
-    ) %>% arrange(desc(abs(Corrélation)))
+      Variable = names(corr_with_score),
+      Corrélation = round(as.numeric(corr_with_score), 3)
+    ) %>%
+      filter(Variable != "Score_Obesite") %>%
+      arrange(desc(abs(Corrélation)))
     datatable(corr_df)
   })
 
@@ -289,17 +298,25 @@ server <- function(input, output, session) {
 
   output$levene_test <- renderPrint({
     if (require("car")) {
-      levene_result <- leveneTest(data$IMC ~ data$Niveau_Obesite)
+      levene_result <- leveneTest(data$Age ~ data$Niveau_Obesite)
       print(levene_result)
     } else {
       print("Package 'car' non installé")
     }
   })
 
+  output$chi2_test <- renderPrint({
+    var <- input$chi2_var
+    tableau <- table(data[[var]], data$Niveau_Obesite)
+    print(tableau)
+    cat("\n")
+    print(chisq.test(tableau))
+  })
+
   # TAB 8: Visualisations Avancées
   output$heatmap_plot <- renderPlot({
     data_numeric <- data[, numeric_vars]
-    corr_matrix <- cor(data_numeric, use = "complete.obs")
+    corr_matrix <- cor(data_numeric, use = "complete.obs", method = "spearman")
     heatmap(corr_matrix, scale = "none", col = colorRampPalette(c("blue", "white", "red"))(100))
   })
 
@@ -314,18 +331,20 @@ server <- function(input, output, session) {
   })
 
   output$plot_3d <- renderPlotly({
-    plot_ly(data, x = ~IMC, y = ~Age, z = ~Poids_kg, color = ~Niveau_Obesite,
+    plot_ly(data, x = ~Age, y = ~Taille_cm, z = ~jitter(Activite_Physique), color = ~Niveau_Obesite,
             type = "scatter3d", mode = "markers",
-            marker = list(size = 5, opacity = 0.7)) %>%
-      layout(title = "IMC vs Age vs Poids par Catégorie d'Obésité")
+            marker = list(size = 4, opacity = 0.7)) %>%
+      layout(title = "Âge vs Taille vs Activité physique par niveau d'obésité",
+             scene = list(xaxis = list(title = "Âge"), yaxis = list(title = "Taille (cm)"),
+                          zaxis = list(title = "Activité physique (1-5)")))
   })
 
   output$violin_obesity <- renderPlot({
-    ggplot(data, aes(x = Niveau_Obesite, y = IMC, fill = Niveau_Obesite)) +
+    ggplot(data, aes(x = Niveau_Obesite, y = Age, fill = Niveau_Obesite)) +
       geom_violin(alpha = 0.7) +
       geom_boxplot(width = 0.2, alpha = 0.5) +
-      labs(title = "Distribution de l'IMC par Catégorie d'Obésité (Violin Plot)",
-           x = "Catégorie d'Obésité", y = "IMC") +
+      labs(title = "Distribution de l'âge par niveau d'obésité (Violin Plot)",
+           x = "Niveau d'obésité", y = "Âge") +
       theme_minimal() +
       theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none")
   })
