@@ -33,9 +33,9 @@ ui <- dashboardPage(
           )
         ),
         fluidRow(
-          valueBox(nrow(data), "nombre d'individus de l'étude", icon = icon("users"), color = "blue", width = 8),
+          valueBox(nrow(data), "nombre d'individus de l'étude", color = "blue", width = 7),
           valueBox(ncol(data), "variables (âge, taille, habitudes de vie, niveau d'obésité)",
-                   icon = icon("list"), color = "blue", width = 8)
+                    color = "blue", width = 7)
         ),
         fluidRow(
           box(title = "Problématique", width = 12, status = "warning", solidHeader = TRUE,
