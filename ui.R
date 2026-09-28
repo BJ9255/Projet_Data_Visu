@@ -4,7 +4,7 @@
 
 # UI
 ui <- dashboardPage(
-  dashboardHeader(title = "Analyse Obésité - Shiny"),
+  dashboardHeader(title = "Analyse Obésité"),
   dashboardSidebar(
     sidebarMenu(
       menuItem("Accueil", tabName = "accueil", icon = icon("home")),
@@ -22,27 +22,44 @@ ui <- dashboardPage(
       # TAB 1: Accueil
       tabItem(tabName = "accueil",
         fluidRow(
-          box(title = "Aperçu du Jeu de Données", width = 12, status = "primary",
-            p("Nombre d'observations:", nrow(data)),
-            p("Nombre de variables:", ncol(data)),
-            hr(),
-            h4("Variables clés:"),
-            p("✓ Variable cible : Niveau_Obesite (Insuffisance pondérale, Normal, Surpoids, Obésité), aussi codée en Score_Obesite (1 à 4)"),
-            p("✓ Pas de poids dans le jeu de données, donc pas d'IMC calculable"),
-            p("✓ Scores ordinaux : Frequence_Legumes (1-3), Repas_Principaux (1-3), Grignotage (1-4), Consommation_Liquide (1-3), Activite_Physique (1-5), Temps_Ecrans (1-3)"),
-            p("✓ Variables numériques:", paste(numeric_vars, collapse = ", ")),
-            p("✓ Variables catégoriques:", paste(categorical_vars, collapse = ", "))
+          box(title = "Origine du Jeu de Données", width = 12, status = "primary", solidHeader = TRUE,
+            p("Ce jeu de données, « Obesity Dataset », provient de l'étude de Koklu et Sulak (2024),
+               qui utilise des techniques d'intelligence artificielle pour analyser le niveau d'obésité
+               des individus en fonction de leurs habitudes de vie : alimentation, activité physique,
+               temps d'écran, moyen de transport."),
+            p(em("Koklu, N., & Sulak, S.A. (2024). Using artificial intelligence techniques for the analysis
+                  of obesity status according to the individuals' social and physical activities.
+                  Sinop Üniversitesi Fen Bilimleri Dergisi, 9(1), 217-239."),
+              a("doi.org/10.33484/sinopfbd.1445215",
+                href = "https://doi.org/10.33484/sinopfbd.1445215", target = "_blank"))
           )
         ),
         fluidRow(
-          box(title = "Premiers Enregistrements", width = 12,
-            DTOutput("table_apercu")
+          valueBox(nrow(data), "individus", icon = icon("users"), color = "blue", width = 6),
+          valueBox(ncol(brut), "variables (âge, taille, habitudes de vie, niveau d'obésité)",
+                   icon = icon("list"), color = "purple", width = 6)
+        ),
+        fluidRow(
+          box(title = "Variable Réponse", width = 12, status = "success", solidHeader = TRUE,
+            p("Notre variable réponse est le ", strong("niveau d'obésité"), " (Niveau_Obesite), en quatre classes :"),
+            tags$ul(
+              tags$li("Insuffisance pondérale"),
+              tags$li("Normal"),
+              tags$li("Surpoids"),
+              tags$li("Obésité")
+            ),
+            p("L'objectif est d'identifier quelles habitudes de vie sont liées à ce niveau d'obésité.")
           )
         )
       ),
 
       # TAB 2: Statistiques Descriptives
       tabItem(tabName = "desc",
+        fluidRow(
+          box(title = "Jeu de Données", width = 12, solidHeader = TRUE, status = "info",
+            DTOutput("table_apercu")
+          )
+        ),
         fluidRow(
           box(title = "Résumé Statistique", width = 12, solidHeader = TRUE, status = "info",
             DTOutput("summary_stats")
@@ -64,10 +81,12 @@ ui <- dashboardPage(
       # TAB 3: Niveau d'Obésité
       tabItem(tabName = "obesite",
         fluidRow(
-          box(title = "Répartition des Niveaux", width = 5, solidHeader = TRUE, status = "success",
+          box(title = "Répartition des Niveaux", width = 12, solidHeader = TRUE, status = "success",
             verbatimTextOutput("obesity_summary")
-          ),
-          box(title = "Profil Moyen par Niveau", width = 7, solidHeader = TRUE, status = "success",
+          )
+        ),
+        fluidRow(
+          box(title = "Profil Moyen par Niveau", width = 12, solidHeader = TRUE, status = "success",
             DTOutput("profile_by_obesity")
           )
         ),

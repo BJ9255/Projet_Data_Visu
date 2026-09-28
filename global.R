@@ -30,7 +30,8 @@ try({
 }, silent = TRUE)
 
 # Charger les données (1re feuille du fichier Excel, toutes les colonnes en numérique)
-brut <- read_excel("Obesity_Dataset.xlsx", sheet = 1)
+# (lecture en texte puis conversion : certaines cellules Excel sont stockées en texte)
+brut <- read_excel("Obesity_Dataset.xlsx", sheet = 1, col_types = "text")
 brut[] <- lapply(brut, as.numeric)
 
 # Le jeu ne contient pas le poids : pas d'IMC possible. La variable cible est

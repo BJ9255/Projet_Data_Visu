@@ -7,20 +7,23 @@ server <- function(input, output, session) {
 
   # TAB 1: Aperçu
   output$table_apercu <- renderDT({
-    datatable(head(data, 10), options = list(pageLength = 10))
+    # Tout le jeu de données, paginé : le nombre de lignes affichées se choisit dans le menu
+    datatable(data, class = "display nowrap",
+              options = list(pageLength = 10, lengthMenu = c(10, 25, 50, 100), scrollX = TRUE))
   })
 
   # TAB 2: Statistiques Descriptives
   output$summary_stats <- renderDT({
     stats_df <- data.frame(
       Variable = numeric_vars,
-      Moyenne = sapply(data[numeric_vars], mean, na.rm = TRUE),
+      Moyenne = round(sapply(data[numeric_vars], mean, na.rm = TRUE), 2),
       Médiane = sapply(data[numeric_vars], median, na.rm = TRUE),
-      SD = sapply(data[numeric_vars], sd, na.rm = TRUE),
+      SD = round(sapply(data[numeric_vars], sd, na.rm = TRUE), 2),
       Min = sapply(data[numeric_vars], min, na.rm = TRUE),
       Max = sapply(data[numeric_vars], max, na.rm = TRUE)
     )
-    datatable(stats_df, options = list(pageLength = 15))
+    # Une ligne par variable (9 au total) : tout sur une page, sans pagination inutile
+    datatable(stats_df, rownames = FALSE, options = list(dom = 't', paging = FALSE))
   })
 
   output$dist_plots <- renderPlot({
@@ -34,7 +37,7 @@ server <- function(input, output, session) {
       ggplot(data, aes(x = !!sym(var))) +
         geom_dist +
         labs(title = var, x = var, y = "Fréquence") +
-        theme_minimal() +
+        theme_minimal(base_size = 13) +
         theme(plot.title = element_text(hjust = 0.5, size = 10, face = "bold"))
     })
     gridExtra::grid.arrange(grobs = plots, ncol = 3)
@@ -47,7 +50,7 @@ server <- function(input, output, session) {
       geom_bar(stat = "identity", alpha = 0.7) +
       geom_text(aes(label = count), vjust = -0.3) +
       labs(title = paste("Distribution de", var), x = var, y = "Nombre") +
-      theme_minimal() +
+      theme_minimal(base_size = 13) +
       theme(axis.text.x = element_text(angle = 45, hjust = 1),
             legend.position = "none")
   })
@@ -76,7 +79,7 @@ server <- function(input, output, session) {
         Pct_Antecedents = round(100 * mean(Antecedents_Familiaux == "Oui"), 1),
         .groups = 'drop'
       )
-    datatable(profil, options = list(dom = 't'))
+    datatable(profil, rownames = FALSE, options = list(dom = 't', paging = FALSE, scrollX = TRUE))
   })
 
   output$obesity_bar <- renderPlot({
@@ -84,7 +87,7 @@ server <- function(input, output, session) {
       geom_bar(alpha = 0.7) +
       geom_text(stat = "count", aes(label = after_stat(count)), vjust = -0.3) +
       labs(title = "Effectifs par niveau d'obésité", x = "Niveau d'obésité", y = "Nombre") +
-      theme_minimal() +
+      theme_minimal(base_size = 13) +
       theme(legend.position = "none")
   })
 
@@ -101,7 +104,7 @@ server <- function(input, output, session) {
       geom_bar(position = "fill", alpha = 0.8) +
       scale_y_continuous(labels = scales::percent) +
       labs(title = "Niveau d'obésité par genre", x = "Genre", y = "Proportion", fill = "Niveau") +
-      theme_minimal()
+      theme_minimal(base_size = 13)
   })
 
   output$obesity_factor <- renderPlot({
@@ -110,7 +113,7 @@ server <- function(input, output, session) {
       geom_bar(position = "fill", alpha = 0.8) +
       scale_y_continuous(labels = scales::percent) +
       labs(title = paste("Niveau d'obésité selon", var), x = var, y = "Proportion", fill = "Niveau") +
-      theme_minimal() +
+      theme_minimal(base_size = 13) +
       theme(axis.text.x = element_text(angle = 45, hjust = 1))
   })
 
@@ -131,7 +134,7 @@ server <- function(input, output, session) {
     ) %>%
       filter(Variable != "Score_Obesite") %>%
       arrange(desc(abs(Corrélation)))
-    datatable(corr_df)
+    datatable(corr_df, rownames = FALSE, options = list(dom = 't', paging = FALSE))
   })
 
   output$select_vars_corr <- renderUI({
@@ -164,20 +167,24 @@ server <- function(input, output, session) {
     pca <- pca_result()
     var_table <- data.frame(
       PC = paste("PC", 1:5, sep = ""),
-      Variance = pca$eig[1:5, 1],
-      Cumulative = pca$eig[1:5, 3]
+      Valeur_propre = round(pca$eig[1:5, 1], 3),
+      Pct_Variance = round(pca$eig[1:5, 2], 1),
+      Pct_Cumule = round(pca$eig[1:5, 3], 1)
     )
-    datatable(var_table)
+    datatable(var_table, rownames = FALSE, options = list(dom = 't', paging = FALSE))
   })
 
   output$pca_biplot1 <- renderPlot({
     pca <- pca_result()
-    fviz_pca_biplot(pca, axes = c(1, 2), repel = TRUE, alpha = 0.7)
+    # 1 610 individus : points sans étiquette, colorés par niveau d'obésité
+    fviz_pca_biplot(pca, axes = c(1, 2), label = "var", geom.ind = "point",
+                    habillage = data$Niveau_Obesite, alpha.ind = 0.4, col.var = "black", repel = TRUE)
   })
 
   output$pca_biplot2 <- renderPlot({
     pca <- pca_result()
-    fviz_pca_biplot(pca, axes = c(1, 3), repel = TRUE, alpha = 0.7)
+    fviz_pca_biplot(pca, axes = c(1, 3), label = "var", geom.ind = "point",
+                    habillage = data$Niveau_Obesite, alpha.ind = 0.4, col.var = "black", repel = TRUE)
   })
 
   output$pca_circle <- renderPlot({
@@ -221,7 +228,7 @@ server <- function(input, output, session) {
       geom_boxplot(alpha = 0.7) +
       geom_jitter(width = 0.2, alpha = 0.3) +
       labs(title = paste(response_var, "par", factor_var), x = factor_var, y = response_var) +
-      theme_minimal() +
+      theme_minimal(base_size = 13) +
       theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none")
   })
 
@@ -232,13 +239,13 @@ server <- function(input, output, session) {
     group_stats <- data %>%
       group_by(!!sym(factor_var)) %>%
       summarise(
-        Moyenne = mean(!!sym(response_var), na.rm = TRUE),
+        Moyenne = round(mean(!!sym(response_var), na.rm = TRUE), 2),
         Médiane = median(!!sym(response_var), na.rm = TRUE),
-        SD = sd(!!sym(response_var), na.rm = TRUE),
+        SD = round(sd(!!sym(response_var), na.rm = TRUE), 2),
         N = n(),
         .groups = 'drop'
       )
-    datatable(group_stats)
+    datatable(group_stats, rownames = FALSE, options = list(dom = 't', paging = FALSE))
   })
 
   output$anova_diagnostics <- renderPlot({
@@ -266,12 +273,12 @@ server <- function(input, output, session) {
     result_df <- data.frame(
       Groupe1 = groups[1],
       Groupe2 = groups[2],
-      Moyenne1 = mean(group1, na.rm = TRUE),
-      Moyenne2 = mean(group2, na.rm = TRUE),
-      t_statistic = t_result$statistic,
-      p_value = t_result$p.value
+      Moyenne1 = round(mean(group1, na.rm = TRUE), 3),
+      Moyenne2 = round(mean(group2, na.rm = TRUE), 3),
+      t_statistic = round(unname(t_result$statistic), 3),
+      p_value = signif(t_result$p.value, 3)
     )
-    datatable(result_df)
+    datatable(result_df, rownames = FALSE, options = list(dom = 't', paging = FALSE))
   })
 
   output$kw_test <- renderPrint({
@@ -290,10 +297,10 @@ server <- function(input, output, session) {
 
     for (i in seq_along(numeric_vars)) {
       sw_test <- shapiro.test(data[[numeric_vars[i]]])
-      normality_results$Shapiro_Statistic[i] <- sw_test$statistic
-      normality_results$p_value[i] <- sw_test$p.value
+      normality_results$Shapiro_Statistic[i] <- round(sw_test$statistic, 4)
+      normality_results$p_value[i] <- signif(sw_test$p.value, 3)
     }
-    datatable(normality_results)
+    datatable(normality_results, rownames = FALSE, options = list(dom = 't', paging = FALSE))
   })
 
   output$levene_test <- renderPrint({
@@ -317,7 +324,8 @@ server <- function(input, output, session) {
   output$heatmap_plot <- renderPlot({
     data_numeric <- data[, numeric_vars]
     corr_matrix <- cor(data_numeric, use = "complete.obs", method = "spearman")
-    heatmap(corr_matrix, scale = "none", col = colorRampPalette(c("blue", "white", "red"))(100))
+    heatmap(corr_matrix, scale = "none", col = colorRampPalette(c("blue", "white", "red"))(100),
+            margins = c(12, 12))
   })
 
   output$pairplot <- renderPlot({
@@ -345,7 +353,7 @@ server <- function(input, output, session) {
       geom_boxplot(width = 0.2, alpha = 0.5) +
       labs(title = "Distribution de l'âge par niveau d'obésité (Violin Plot)",
            x = "Niveau d'obésité", y = "Âge") +
-      theme_minimal() +
+      theme_minimal(base_size = 13) +
       theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none")
   })
 }
