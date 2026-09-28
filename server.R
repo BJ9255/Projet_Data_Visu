@@ -1,0 +1,333 @@
+# ============================================================
+# server.R : logique serveur (calculs, graphiques, tests stat.)
+# ============================================================
+
+# SERVER
+server <- function(input, output, session) {
+
+  # TAB 1: Aperçu
+  output$table_apercu <- renderDT({
+    datatable(head(data, 10), options = list(pageLength = 10))
+  })
+
+  # TAB 2: Statistiques Descriptives
+  output$summary_stats <- renderDT({
+    stats_df <- data.frame(
+      Variable = numeric_vars,
+      Moyenne = sapply(data[numeric_vars], mean, na.rm = TRUE),
+      Médiane = sapply(data[numeric_vars], median, na.rm = TRUE),
+      SD = sapply(data[numeric_vars], sd, na.rm = TRUE),
+      Min = sapply(data[numeric_vars], min, na.rm = TRUE),
+      Max = sapply(data[numeric_vars], max, na.rm = TRUE)
+    )
+    datatable(stats_df, options = list(pageLength = 15))
+  })
+
+  output$dist_plots <- renderPlot({
+    plots <- lapply(numeric_vars, function(var) {
+      ggplot(data, aes(x = !!sym(var))) +
+        geom_histogram(fill = "steelblue", bins = 30, alpha = 0.7) +
+        labs(title = var, x = var, y = "Fréquence") +
+        theme_minimal() +
+        theme(plot.title = element_text(hjust = 0.5, size = 10, face = "bold"))
+    })
+    gridExtra::grid.arrange(grobs = plots, ncol = 3)
+  })
+
+  output$bar_plots <- renderPlot({
+    var <- input$cat_var
+    data_counts <- data %>% group_by(!!sym(var)) %>% summarise(count = n())
+    ggplot(data_counts, aes(x = !!sym(var), y = count, fill = !!sym(var))) +
+      geom_bar(stat = "identity", alpha = 0.7) +
+      geom_text(aes(label = count), vjust = -0.3) +
+      labs(title = paste("Distribution de", var), x = var, y = "Nombre") +
+      theme_minimal() +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1),
+            legend.position = "none")
+  })
+
+  # TAB 3: IMC
+  output$imc_summary <- renderPrint({
+    cat("Statistiques de l'IMC\n")
+    cat("====================\n\n")
+    cat("Moyenne:", mean(data$IMC, na.rm = TRUE), "\n")
+    cat("Médiane:", median(data$IMC, na.rm = TRUE), "\n")
+    cat("Écart-type:", sd(data$IMC, na.rm = TRUE), "\n")
+    cat("Min:", min(data$IMC, na.rm = TRUE), "\n")
+    cat("Max:", max(data$IMC, na.rm = TRUE), "\n")
+    cat("Q1:", quantile(data$IMC, 0.25, na.rm = TRUE), "\n")
+    cat("Q3:", quantile(data$IMC, 0.75, na.rm = TRUE), "\n")
+  })
+
+  output$imc_by_obesity <- renderDT({
+    imc_obesity <- data %>%
+      group_by(Niveau_Obesite) %>%
+      summarise(
+        Moyenne_IMC = mean(IMC, na.rm = TRUE),
+        Médiane_IMC = median(IMC, na.rm = TRUE),
+        SD_IMC = sd(IMC, na.rm = TRUE),
+        N = n(),
+        .groups = 'drop'
+      ) %>%
+      arrange(Moyenne_IMC)
+    datatable(imc_obesity)
+  })
+
+  output$imc_hist <- renderPlot({
+    ggplot(data, aes(x = IMC)) +
+      geom_histogram(fill = "darkgreen", bins = 40, alpha = 0.7) +
+      geom_vline(aes(xintercept = mean(IMC)), color = "red", linetype = "dashed", size = 1) +
+      geom_vline(aes(xintercept = median(IMC)), color = "blue", linetype = "dashed", size = 1) +
+      labs(title = "Distribution de l'IMC", x = "IMC", y = "Fréquence") +
+      theme_minimal()
+  })
+
+  output$imc_weight <- renderPlotly({
+    plot_ly(data, x = ~Poids_kg, y = ~IMC, color = ~Genre, type = "scatter", mode = "markers",
+            marker = list(size = 5, opacity = 0.7)) %>%
+      layout(title = "IMC vs Poids par Genre", xaxis = list(title = "Poids (kg)"),
+             yaxis = list(title = "IMC"))
+  })
+
+  output$imc_gender <- renderPlot({
+    ggplot(data, aes(x = Genre, y = IMC, fill = Genre)) +
+      geom_boxplot(alpha = 0.7) +
+      geom_jitter(width = 0.2, alpha = 0.3) +
+      labs(title = "IMC par Genre", x = "Genre", y = "IMC") +
+      theme_minimal() +
+      theme(legend.position = "none")
+  })
+
+  output$imc_obesity <- renderPlot({
+    ggplot(data, aes(x = reorder(Niveau_Obesite, IMC, FUN = median), y = IMC, fill = Niveau_Obesite)) +
+      geom_boxplot(alpha = 0.7) +
+      geom_jitter(width = 0.2, alpha = 0.3, size = 2) +
+      labs(title = "Distribution de l'IMC par Catégorie d'Obésité", x = "Catégorie d'Obésité", y = "IMC") +
+      theme_minimal() +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none")
+  })
+
+  # TAB 4: Corrélations
+  output$corr_matrix <- renderPlot({
+    data_numeric <- data[, numeric_vars]
+    corr_matrix <- cor(data_numeric, use = "complete.obs")
+    corrplot(corr_matrix, method = "circle", type = "upper", tl.cex = 0.8,
+             addCoef.col = "black", number.cex = 0.7)
+  })
+
+  output$imc_correlations <- renderDT({
+    data_numeric <- data[, numeric_vars]
+    corr_with_imc <- cor(data_numeric, use = "complete.obs")[, "IMC"]
+    corr_df <- data.frame(
+      Variable = names(corr_with_imc),
+      Corrélation = as.numeric(corr_with_imc)
+    ) %>% arrange(desc(abs(Corrélation)))
+    datatable(corr_df)
+  })
+
+  output$select_vars_corr <- renderUI({
+    selectInput("corr_selected_vars", "Choisir 4-6 variables:", numeric_vars,
+                multiple = TRUE, selected = numeric_vars[1:4])
+  })
+
+  output$scatter_matrix <- renderPlot({
+    if (is.null(input$corr_selected_vars)) {
+      plot.new()
+    } else {
+      data_subset <- data[, input$corr_selected_vars]
+      ggpairs(data_subset, alpha = 0.5)
+    }
+  })
+
+  # TAB 5: ACP
+  pca_result <- eventReactive(input$run_pca, {
+    req(input$pca_vars)
+    data_pca <- na.omit(data[, input$pca_vars])
+    PCA(data_pca, scale.unit = TRUE, ncp = 5, graph = FALSE)
+  })
+
+  output$pca_variance <- renderPlot({
+    pca <- pca_result()
+    fviz_eig(pca, addlabels = TRUE, barfill = "steelblue")
+  })
+
+  output$pca_variance_table <- renderDT({
+    pca <- pca_result()
+    var_table <- data.frame(
+      PC = paste("PC", 1:5, sep = ""),
+      Variance = pca$eig[1:5, 1],
+      Cumulative = pca$eig[1:5, 3]
+    )
+    datatable(var_table)
+  })
+
+  output$pca_biplot1 <- renderPlot({
+    pca <- pca_result()
+    fviz_pca_biplot(pca, axes = c(1, 2), repel = TRUE, alpha = 0.7)
+  })
+
+  output$pca_biplot2 <- renderPlot({
+    pca <- pca_result()
+    fviz_pca_biplot(pca, axes = c(1, 3), repel = TRUE, alpha = 0.7)
+  })
+
+  output$pca_circle <- renderPlot({
+    pca <- pca_result()
+    fviz_pca_var(pca, col.var = "contrib", gradient.cols = c("blue", "red"), repel = TRUE)
+  })
+
+  output$pca_vars <- renderPlot({
+    pca <- pca_result()
+    fviz_pca_var(pca, axes = c(1, 2))
+  })
+
+  output$pca_contrib <- renderPlot({
+    pca <- pca_result()
+    p1 <- fviz_contrib(pca, choice = "var", axes = 1, top = 10)
+    p2 <- fviz_contrib(pca, choice = "var", axes = 2, top = 10)
+    gridExtra::grid.arrange(p1, p2, ncol = 2)
+  })
+
+  # TAB 6: ANOVA
+  anova_result <- eventReactive(input$run_anova, {
+    factor_var <- input$anova_factor
+    response_var <- input$anova_response
+
+    formula_str <- paste(response_var, "~", factor_var)
+    aov_model <- aov(as.formula(formula_str), data = data)
+    list(model = aov_model, formula = formula_str)
+  })
+
+  output$anova_table <- renderPrint({
+    result <- anova_result()
+    summary(result$model)
+  })
+
+  output$anova_boxplot <- renderPlot({
+    result <- anova_result()
+    factor_var <- input$anova_factor
+    response_var <- input$anova_response
+
+    ggplot(data, aes(x = !!sym(factor_var), y = !!sym(response_var), fill = !!sym(factor_var))) +
+      geom_boxplot(alpha = 0.7) +
+      geom_jitter(width = 0.2, alpha = 0.3) +
+      labs(title = paste(response_var, "par", factor_var), x = factor_var, y = response_var) +
+      theme_minimal() +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none")
+  })
+
+  output$anova_group_stats <- renderDT({
+    factor_var <- input$anova_factor
+    response_var <- input$anova_response
+
+    group_stats <- data %>%
+      group_by(!!sym(factor_var)) %>%
+      summarise(
+        Moyenne = mean(!!sym(response_var), na.rm = TRUE),
+        Médiane = median(!!sym(response_var), na.rm = TRUE),
+        SD = sd(!!sym(response_var), na.rm = TRUE),
+        N = n(),
+        .groups = 'drop'
+      )
+    datatable(group_stats)
+  })
+
+  output$anova_diagnostics <- renderPlot({
+    result <- anova_result()
+    par(mfrow = c(2, 2))
+    plot(result$model)
+    par(mfrow = c(1, 1))
+  })
+
+  # TAB 7: Tests Statistiques
+  output$ttest_results <- renderDT({
+    var <- input$ttest_var
+    group_var <- input$ttest_group
+
+    groups <- unique(data[[group_var]])
+    if (length(groups) != 2) {
+      return(NULL)
+    }
+
+    group1 <- data[data[[group_var]] == groups[1], var]
+    group2 <- data[data[[group_var]] == groups[2], var]
+
+    t_result <- t.test(group1, group2)
+
+    result_df <- data.frame(
+      Groupe1 = groups[1],
+      Groupe2 = groups[2],
+      Moyenne1 = mean(group1, na.rm = TRUE),
+      Moyenne2 = mean(group2, na.rm = TRUE),
+      t_statistic = t_result$statistic,
+      p_value = t_result$p.value
+    )
+    datatable(result_df)
+  })
+
+  output$kw_test <- renderPrint({
+    var <- input$ttest_var
+    group_var <- input$ttest_group
+    kw_result <- kruskal.test(as.formula(paste(var, "~", group_var)), data = data)
+    print(kw_result)
+  })
+
+  output$normality_test <- renderDT({
+    normality_results <- data.frame(
+      Variable = numeric_vars,
+      Shapiro_Statistic = NA,
+      p_value = NA
+    )
+
+    for (i in seq_along(numeric_vars)) {
+      sw_test <- shapiro.test(data[[numeric_vars[i]]])
+      normality_results$Shapiro_Statistic[i] <- sw_test$statistic
+      normality_results$p_value[i] <- sw_test$p.value
+    }
+    datatable(normality_results)
+  })
+
+  output$levene_test <- renderPrint({
+    if (require("car")) {
+      levene_result <- leveneTest(data$IMC ~ data$Niveau_Obesite)
+      print(levene_result)
+    } else {
+      print("Package 'car' non installé")
+    }
+  })
+
+  # TAB 8: Visualisations Avancées
+  output$heatmap_plot <- renderPlot({
+    data_numeric <- data[, numeric_vars]
+    corr_matrix <- cor(data_numeric, use = "complete.obs")
+    heatmap(corr_matrix, scale = "none", col = colorRampPalette(c("blue", "white", "red"))(100))
+  })
+
+  output$pairplot <- renderPlot({
+    if (is.null(input$pair_vars)) {
+      plot.new()
+    } else {
+      data_subset <- data[, input$pair_vars]
+      ggpairs(data_subset, lower = list(continuous = wrap("points", alpha = 0.3)),
+              diag = list(continuous = "densityDiag"))
+    }
+  })
+
+  output$plot_3d <- renderPlotly({
+    plot_ly(data, x = ~IMC, y = ~Age, z = ~Poids_kg, color = ~Niveau_Obesite,
+            type = "scatter3d", mode = "markers",
+            marker = list(size = 5, opacity = 0.7)) %>%
+      layout(title = "IMC vs Age vs Poids par Catégorie d'Obésité")
+  })
+
+  output$violin_obesity <- renderPlot({
+    ggplot(data, aes(x = Niveau_Obesite, y = IMC, fill = Niveau_Obesite)) +
+      geom_violin(alpha = 0.7) +
+      geom_boxplot(width = 0.2, alpha = 0.5) +
+      labs(title = "Distribution de l'IMC par Catégorie d'Obésité (Violin Plot)",
+           x = "Catégorie d'Obésité", y = "IMC") +
+      theme_minimal() +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none")
+  })
+}
+
