@@ -16,3 +16,4 @@ app_dir <- tryCatch({
 
 if (!requireNamespace("shiny", quietly = TRUE)) install.packages("shiny")
 shiny::runApp(app_dir, launch.browser = TRUE)
+
