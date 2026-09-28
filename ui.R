@@ -21,7 +21,7 @@ ui <- dashboardPage(
       tabItem(tabName = "accueil",
         fluidRow(
           box(title = "Origine du Jeu de Données", width = 12, status = "primary", solidHeader = TRUE,
-            p("Ce jeu de données, « Obesity Dataset », provient de l'étude de Koklu et Sulak (2024),
+            p("-> Ce jeu de données, « Obesity Dataset », provient de l'étude de Koklu et Sulak (2024),
                qui utilise des techniques d'intelligence artificielle pour analyser le niveau d'obésité
                des individus en fonction de leurs habitudes de vie : alimentation, activité physique,
                temps d'écran, moyen de transport."),
@@ -33,9 +33,9 @@ ui <- dashboardPage(
           )
         ),
         fluidRow(
-          valueBox(nrow(data), "individus", icon = icon("users"), color = "blue", width = 6),
+          valueBox(nrow(data), "nombre d'individus de l'étude", icon = icon("users"), color = "blue", width = 8),
           valueBox(ncol(data), "variables (âge, taille, habitudes de vie, niveau d'obésité)",
-                   icon = icon("list"), color = "purple", width = 6)
+                   icon = icon("list"), color = "blue", width = 8)
         ),
         fluidRow(
           box(title = "Problématique", width = 12, status = "warning", solidHeader = TRUE,
