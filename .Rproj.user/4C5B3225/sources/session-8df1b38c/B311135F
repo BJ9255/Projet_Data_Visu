@@ -1,0 +1,26 @@
+{
+    "id": "B311135F",
+    "path": "~/Desktop/appli_v2/server.R",
+    "project_path": "server.R",
+    "type": "r_source",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1791470178522.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "26,69",
+        "scrollLine": "18"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1791477064,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1791477064,
+    "read_only": false,
+    "read_only_alternatives": []
+}

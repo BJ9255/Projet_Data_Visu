@@ -1,0 +1,402 @@
+/* ============================================================
+   style.css : thème « BD ligne claire »
+   Papier crème, contours noirs nets, aplats de couleur, ombres dures décalées,
+   titres façon bande dessinée (Bangers) et texte lisible (Nunito)
+   ============================================================ */
+
+:root {
+  --papier: #FBF6EC;
+  --papier-2: #F3EBDA;
+  --encre: #1B1A17;
+  --encre-2: #3A3833;
+  --encre-3: #6E6A60;
+  --blanc: #FFFFFF;
+  --jaune: #F7D23E;
+  --rouge: #D9452F;
+  --bleu: #3D6FB6;
+  --vert: #4FAE6E;
+  --trait: 2.5px solid var(--encre);
+  --ombre: 5px 5px 0 var(--encre);
+  --ombre-petite: 3px 3px 0 var(--encre);
+  --rebond: cubic-bezier(.34, 1.56, .64, 1);
+  --doux: cubic-bezier(.22, 1, .36, 1);
+  --chute: cubic-bezier(.55, 0, 1, .45);
+}
+
+/* ---------- Base ---------- */
+html { scroll-behavior: smooth; }
+body {
+  background-color: var(--papier); color: var(--encre); font-family: "Nunito", system-ui, sans-serif;
+  font-size: 15.5px; line-height: 1.6; overflow-x: hidden;
+  /* trame de points façon impression BD */
+  background-image: radial-gradient(rgba(27, 26, 23, .07) 1.2px, transparent 1.4px);
+  background-size: 14px 14px;
+}
+.container-fluid { max-width: 1320px; margin: 0 auto; padding: 0 28px; position: relative; z-index: 1; }
+h1, h2, h3 { color: var(--encre); }
+em { font-style: normal; color: var(--rouge); }
+a { color: var(--bleu); font-weight: 700; }
+strong { font-weight: 800; }
+p, li { text-wrap: pretty; }
+::selection { background: var(--jaune); }
+.note { color: var(--encre-3); font-size: 13.5px; line-height: 1.55; margin: 10px 0 0; }
+.fond, .grain { display: none; }
+
+/* ---------- Navigation : bandeau de titre BD ---------- */
+.ile-nav {
+  position: sticky; top: 14px; z-index: 10; margin: 14px auto 0; width: max-content; max-width: calc(100% - 32px);
+  display: flex; align-items: center; gap: 16px; padding: 8px 8px 8px 18px;
+  background: var(--blanc); border: var(--trait); border-radius: 16px; box-shadow: var(--ombre);
+  animation: tomber-nav .8s var(--rebond) both;
+}
+@keyframes tomber-nav { from { transform: translateY(-120px) rotate(-3deg); } }
+.marque { display: flex; align-items: center; gap: 10px; font: 400 22px "Bangers", cursive; letter-spacing: .04em; white-space: nowrap; }
+.marque-point { width: 14px; height: 14px; border-radius: 50%; background: var(--rouge); border: 2px solid var(--encre); }
+.ile-liens { position: relative; display: flex; gap: 6px; }
+.indicateur { display: none; }
+.lien-nav {
+  position: relative; background: var(--papier); border: 2px solid var(--encre); color: var(--encre);
+  font: 800 13.5px "Nunito", sans-serif; padding: 8px 14px; border-radius: 12px; cursor: pointer;
+  display: flex; align-items: center; gap: 8px; white-space: nowrap;
+  transition: transform .35s var(--rebond), box-shadow .35s var(--rebond), background .2s;
+}
+.lien-nav:hover { transform: translate(-2px, -2px); box-shadow: var(--ombre-petite); }
+.lien-nav.actif { background: var(--jaune); box-shadow: var(--ombre-petite); transform: translate(-2px, -2px) rotate(-1.5deg); }
+.num-nav { font: 400 15px "Bangers", cursive; letter-spacing: .05em; color: var(--rouge); }
+.lien-nav:focus-visible { outline: 3px solid var(--bleu); outline-offset: 3px; }
+
+/* ---------- Apparitions ---------- */
+.reveal { opacity: 0; transform: translateY(40px) rotate(-1deg) scale(.97);
+  transition: opacity .6s var(--doux), transform .8s var(--rebond); transition-delay: calc(var(--i, 0) * 70ms); }
+.reveal.vu { opacity: 1; transform: none; }
+
+/* ---------- Pastilles (cartouches) ---------- */
+.pastille-sur {
+  display: inline-block; padding: 4px 14px; background: var(--jaune); border: 2px solid var(--encre); border-radius: 8px;
+  font: 400 17px "Bangers", cursive; letter-spacing: .08em; box-shadow: var(--ombre-petite); transform: rotate(-2deg);
+}
+
+/* ---------- Accueil : héros ---------- */
+.hero { min-height: calc(100dvh - 90px); display: grid; grid-template-columns: 1.1fr .9fr; gap: 40px; align-items: center; padding: 50px 0 40px; }
+.hero-titre { font: 400 clamp(56px, 7.2vw, 108px)/0.92 "Bangers", cursive; letter-spacing: .02em; margin: 24px 0 22px; text-wrap: balance;
+  text-shadow: 4px 4px 0 var(--jaune); }
+.hero-titre em { color: var(--rouge); text-shadow: 4px 4px 0 var(--encre); }
+.hero-chapeau { font-size: 18.5px; color: var(--encre-2); max-width: 54ch; }
+.hero-actions { display: flex; align-items: center; gap: 22px; margin-top: 30px; flex-wrap: wrap; }
+.lien-doux { color: var(--encre); text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; font-size: 14.5px; display: inline-flex; gap: 6px; align-items: center; }
+.compteurs { display: flex; gap: 18px; margin-top: 40px; flex-wrap: wrap; }
+.compteur { display: flex; flex-direction: column; padding: 12px 18px; background: var(--blanc); border: var(--trait); border-radius: 14px;
+  box-shadow: var(--ombre-petite); color: var(--encre-2); font-size: 13px; font-weight: 700; }
+.compteur:nth-child(2) { transform: rotate(1.5deg); } .compteur:nth-child(3) { transform: rotate(-1deg); }
+.compteur-valeur { font: 400 46px/1 "Bangers", cursive; letter-spacing: .03em; color: var(--encre); font-variant-numeric: tabular-nums; }
+
+.hero-visuel {
+  position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; min-height: 540px;
+  background: var(--blanc); border: 3px solid var(--encre); border-radius: 22px; box-shadow: 8px 8px 0 var(--encre); overflow: hidden;
+  padding-bottom: 28px;
+}
+/* rayons de soleil de BD derrière la mascotte */
+.hero-visuel::before {
+  content: ""; position: absolute; inset: -40%; z-index: 0;
+  background: repeating-conic-gradient(from 0deg at 50% 50%, #FFF4C2 0deg 9deg, #FFFBEA 9deg 18deg);
+  animation: tourner 60s linear infinite;
+}
+.hero-visuel::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 92px; background: var(--papier-2); border-top: 3px solid var(--encre); z-index: 0; }
+@keyframes tourner { to { transform: rotate(360deg); } }
+.anneau, .anneau-2 { display: none; }
+.hero-visuel svg.mascotte { position: relative; z-index: 1; }
+.etiquette-niveau {
+  position: relative; z-index: 2; margin-top: -6px; display: inline-flex; align-items: center; gap: 10px; padding: 7px 18px;
+  background: var(--blanc); border: var(--trait); border-radius: 12px; box-shadow: var(--ombre-petite);
+  font: 400 22px "Bangers", cursive; letter-spacing: .06em;
+}
+.point-niveau { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--encre); background: #74C488; transition: background .4s; }
+.etiquette-niveau[data-niveau="0"] .point-niveau { background: #3D78B0; }
+.etiquette-niveau[data-niveau="1"] .point-niveau { background: #74C488; }
+.etiquette-niveau[data-niveau="2"] .point-niveau { background: #E8933A; }
+.etiquette-niveau[data-niveau="3"] .point-niveau { background: #B43B2E; }
+#niveau_accueil.change { animation: boing .5s var(--rebond); display: inline-block; }
+@keyframes boing { 0% { transform: scale(.5) rotate(-8deg); } }
+.anneau-defilement { position: absolute; top: 16px; right: 18px; z-index: 2; display: flex; align-items: center; gap: 6px;
+  font: 400 16px "Bangers", cursive; letter-spacing: .06em; background: var(--jaune); border: 2px solid var(--encre); padding: 3px 10px; border-radius: 8px; transform: rotate(3deg); }
+.anneau-defilement i { animation: rebond 1.4s var(--rebond) infinite; }
+@keyframes rebond { 50% { transform: translateY(4px); } }
+
+/* ---------- Sections et en-têtes ---------- */
+.section { padding: 46px 0 30px; }
+.tab-pane[data-value="contexte"] .section { padding-top: 10px; }
+.entete { margin-bottom: 34px; max-width: 920px; }
+.entete h1 { font: 400 clamp(46px, 5.6vw, 78px)/0.95 "Bangers", cursive; letter-spacing: .02em; margin: 18px 0 14px; text-shadow: 3px 3px 0 var(--jaune); text-wrap: balance; }
+.entete h1 em { text-shadow: 3px 3px 0 var(--encre); }
+.question { font-size: 18.5px; color: var(--encre-2); max-width: 62ch; margin: 0; font-weight: 600; }
+
+.rangee { display: flex; flex-wrap: wrap; }
+.rangee > [class*="col-"] { display: flex; flex-direction: column; margin-bottom: 30px; }
+.rangee > [class*="col-"] > .coque { flex: 1; }
+
+/* ---------- Cases de BD ---------- */
+.coque { display: flex; border-radius: 18px; }
+.noyau {
+  position: relative; flex: 1; min-width: 0; display: flex; flex-direction: column;
+  background: var(--blanc); border: 3px solid var(--encre); border-radius: 18px; box-shadow: var(--ombre);
+  transition: transform .45s var(--rebond), box-shadow .45s var(--rebond);
+}
+.coque:hover .noyau { transform: translate(-2px, -2px); box-shadow: 8px 8px 0 var(--encre); }
+.carte-tete { padding: 0 24px; position: relative; }
+.carte-tete h3 {
+  display: inline-block; margin: -16px 0 0; padding: 4px 14px; background: var(--jaune); border: 2.5px solid var(--encre); border-radius: 10px;
+  font: 400 22px "Bangers", cursive; letter-spacing: .05em; box-shadow: var(--ombre-petite); transform: rotate(-1.2deg);
+}
+.sous-titre { margin: 10px 0 0; color: var(--encre-3); font-size: 14px; font-weight: 600; line-height: 1.45; }
+.carte-corps { padding: 16px 24px 24px; flex: 1; display: flex; flex-direction: column; position: relative; min-width: 0; }
+.bas-carte { margin-top: auto; padding-top: 16px; }
+.recalculating { opacity: .4; transition: opacity .3s; }
+
+/* ---------- Boutons ---------- */
+.btn-ile {
+  display: inline-flex; align-items: center; gap: 12px; padding: 8px 8px 8px 20px; border-radius: 14px;
+  background: var(--rouge); color: var(--blanc); border: 3px solid var(--encre); box-shadow: var(--ombre);
+  font: 400 21px "Bangers", cursive; letter-spacing: .06em; cursor: pointer; transition: transform .3s var(--rebond), box-shadow .3s var(--rebond);
+}
+.btn-ile:hover { transform: translate(-3px, -3px) rotate(-1deg); box-shadow: 8px 8px 0 var(--encre); color: var(--blanc); }
+.btn-ile:active { transform: translate(3px, 3px); box-shadow: 1px 1px 0 var(--encre); }
+.btn-ile .bulle { width: 36px; height: 36px; border-radius: 10px; background: var(--jaune); color: var(--encre); border: 2px solid var(--encre);
+  display: inline-flex; align-items: center; justify-content: center; font-size: 18px; transition: transform .3s var(--rebond); }
+.btn-ile:hover .bulle { transform: rotate(12deg) scale(1.1); }
+.btn-ile:focus { outline: none; } .btn-ile:focus-visible { outline: 3px solid var(--bleu); outline-offset: 4px; }
+.pilule { padding: 8px 15px; border-radius: 12px; border: 2.5px solid var(--encre); background: var(--blanc); color: var(--encre);
+  font: 800 13.5px "Nunito", sans-serif; cursor: pointer; box-shadow: var(--ombre-petite); transition: transform .3s var(--rebond), box-shadow .3s var(--rebond), background .2s; }
+.pilule:hover { background: var(--jaune); transform: translate(-2px, -2px); box-shadow: 5px 5px 0 var(--encre); }
+.pilule:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--encre); }
+.profils { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+
+/* ---------- Contrôles ---------- */
+.form-group { margin-bottom: 14px; }
+label, .control-label { color: var(--encre); font-weight: 800; font-size: 13px; }
+.shiny-input-container { width: 100% !important; }
+.selectize-input, .form-control {
+  background: var(--blanc) !important; border: 2.5px solid var(--encre) !important; color: var(--encre) !important; border-radius: 12px !important;
+  box-shadow: var(--ombre-petite) !important; min-height: 42px; padding: 9px 13px !important; font-weight: 700;
+}
+.selectize-input.focus { background: #FFF8D6 !important; }
+.selectize-control.single .selectize-input:after { border-color: var(--encre) transparent transparent transparent; }
+.selectize-dropdown { background: var(--blanc); border: 2.5px solid var(--encre); border-radius: 12px; box-shadow: var(--ombre); margin-top: 6px; overflow: hidden; }
+.selectize-dropdown .option { padding: 8px 13px; font-weight: 600; }
+.selectize-dropdown .active { background: var(--jaune); color: var(--encre); }
+.irs--shiny .irs-line { background: var(--papier-2); border: 2px solid var(--encre); height: 10px; top: 24px; border-radius: 6px; }
+.irs--shiny .irs-bar { background: var(--vert); border: 2px solid var(--encre); height: 10px; top: 24px; }
+.irs--shiny .irs-handle { background: var(--jaune); border: 2.5px solid var(--encre); box-shadow: none; top: 18px; width: 22px; height: 22px; }
+.irs--shiny .irs-single { background: var(--encre); color: var(--blanc); font: 800 12px "Nunito"; }
+.irs--shiny .irs-min, .irs--shiny .irs-max { background: transparent; color: var(--encre-3); }
+.irs--shiny .irs-grid-text { color: var(--encre-3); } .irs--shiny .irs-grid-pol { background: var(--encre-3); }
+.grille-reglages { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
+
+/* ---------- Questionnaire et pari ---------- */
+.questionnaire { display: grid; gap: 2px; }
+.theme { display: grid; grid-template-columns: 240px 1fr; gap: 14px; align-items: start; padding: 13px 0; border-bottom: 2px dashed rgba(27, 26, 23, .2); }
+.theme:last-child { border-bottom: 0; }
+.theme-tete { display: flex; align-items: center; gap: 12px; font-weight: 800; }
+.theme-icone { width: 38px; height: 38px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center;
+  background: var(--jaune); border: 2px solid var(--encre); font-size: 19px; box-shadow: 2px 2px 0 var(--encre); }
+.theme:nth-child(2) .theme-icone { background: #BFE3C9; } .theme:nth-child(3) .theme-icone { background: #C9D9F2; } .theme:nth-child(4) .theme-icone { background: #F8C9BF; }
+.puces { display: flex; flex-wrap: wrap; gap: 7px; }
+.puce { padding: 4px 11px; border-radius: 9px; border: 2px solid var(--encre); background: var(--blanc); font-size: 12.5px; font-weight: 700;
+  cursor: help; transition: transform .3s var(--rebond), background .2s; }
+.puce:hover { background: var(--jaune); transform: rotate(-3deg) scale(1.06); }
+.puce-active { background: #E3ECFA; }
+
+.carte-pari .noyau { background: #FFF8D6; }
+.carte-pari .carte-corps { padding: 34px 34px 30px; }
+.pari-tete h2 { font: 400 clamp(32px, 3.6vw, 48px)/1 "Bangers", cursive; letter-spacing: .03em; margin: 16px 0 24px; max-width: 26ch; }
+.paris .shiny-options-group { display: flex; flex-wrap: wrap; gap: 10px; }
+.paris .radio-inline { margin: 0 !important; padding: 0; }
+.paris .radio-inline input { position: absolute; opacity: 0; }
+.paris .radio-inline span {
+  display: inline-block; padding: 10px 18px; border-radius: 12px; border: 2.5px solid var(--encre); background: var(--blanc);
+  font-size: 14.5px; font-weight: 800; cursor: pointer; box-shadow: var(--ombre-petite); transition: transform .3s var(--rebond), box-shadow .3s var(--rebond), background .2s;
+}
+.paris .radio-inline span:hover { transform: translate(-2px, -2px) rotate(-1deg); box-shadow: 5px 5px 0 var(--encre); }
+.paris .radio-inline input:checked + span { background: var(--bleu); color: var(--blanc); }
+.pari-suite { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-top: 24px;
+  padding-top: 20px; border-top: 2.5px dashed var(--encre); font-weight: 600; animation: boing .5s var(--rebond); }
+.pari-resultat { display: flex; align-items: center; gap: 14px; margin: 0 0 30px; padding: 14px 18px; border-radius: 14px;
+  background: #FFE1C2; border: 2.5px solid var(--encre); box-shadow: var(--ombre-petite); font-weight: 600; animation: boing .6s var(--rebond); }
+.pari-resultat.gagne { background: #CDEFD7; }
+.pari-resultat i { font-size: 24px; }
+
+/* ---------- Encadrés et messages ---------- */
+.encadre { margin-top: 16px; padding: 12px 15px; border-radius: 12px; background: #FFE9D6; border: 2px solid var(--encre); font-size: 14px; font-weight: 600; line-height: 1.5; }
+.messages { display: grid; gap: 12px; }
+.message { display: flex; gap: 14px; padding: 14px 16px; border-radius: 14px; background: var(--papier); border: 2.5px solid var(--encre); box-shadow: var(--ombre-petite); }
+.message .num { font: 400 30px/1 "Bangers", cursive; color: var(--rouge); min-width: 24px; }
+.message strong { display: block; font-size: 15.5px; margin-bottom: 2px; }
+.message span { color: var(--encre-2); font-size: 14px; }
+
+/* ---------- Bulles de BD (« À retenir ») ---------- */
+.bulle-bd { display: flex; align-items: flex-end; gap: 8px; margin-top: 18px; }
+.bulle-bd svg.mascotte { flex: 0 0 64px; width: 64px; height: 96px; }
+.bulle-bd .bulle-texte {
+  position: relative; flex: 1; padding: 13px 17px; background: var(--blanc); border: 3px solid var(--encre); border-radius: 22px;
+  box-shadow: var(--ombre-petite); margin-bottom: 44px;
+}
+.bulle-bd .bulle-texte::before { content: ""; position: absolute; left: -19px; bottom: 10px; border-style: solid; border-width: 10px 19px 4px 0; border-color: transparent var(--encre) transparent transparent; }
+.bulle-bd .bulle-texte::after { content: ""; position: absolute; left: -12px; bottom: 12.5px; border-style: solid; border-width: 7px 14px 3px 0; border-color: transparent var(--blanc) transparent transparent; }
+.a-retenir-titre { display: block; font: 400 17px "Bangers", cursive; letter-spacing: .07em; color: var(--rouge); margin-bottom: 2px; }
+.bulle-texte p { margin: 0; font-size: 15px; line-height: 1.5; font-weight: 600; }
+.lettre { opacity: 0; }
+.lettre.ok { opacity: 1; }
+
+/* ---------- Page 2 : légende de la carte ---------- */
+.legende-carte { padding-left: 16px; border-left: 2.5px dashed rgba(27, 26, 23, .25); height: 100%; display: flex; flex-direction: column; }
+.legende-carte .bulle-bd { margin-top: auto; }
+.legende-titre { font: 400 18px "Bangers", cursive; letter-spacing: .06em; margin: 0 0 6px; }
+.legende-ligne { display: flex; align-items: center; padding: 8px 0; border-bottom: 2px dashed rgba(27, 26, 23, .15); font-weight: 700; }
+.pastille-couleur, .pastille { display: inline-block; width: 14px; height: 14px; border-radius: 50%; margin-right: 10px; border: 2px solid var(--encre); }
+.variables-afdm { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 28px; margin-top: 18px; padding-top: 18px; border-top: 2.5px dashed rgba(27, 26, 23, .25); }
+.etiquette-afdm { font: 400 18px "Bangers", cursive; letter-spacing: .05em; margin-right: 8px; }
+.variables-afdm .puces { margin-top: 8px; }
+
+/* ---------- Mascotte qui marche sur la carte AFDM ---------- */
+.carte-afdm-boite { position: relative; }
+.marcheur { position: absolute; left: 0; top: 0; width: 48px; height: 72px; z-index: 4; pointer-events: none; overflow: visible; }
+.rejouer-marche { position: absolute; top: 6px; right: 14px; z-index: 5; }
+
+/* ---------- Page 3 : simulateur et balance ---------- */
+.sim-tete { display: flex; align-items: flex-end; gap: 22px; margin-bottom: 8px; }
+.sim-silhouette { flex: 0 0 170px; position: relative; display: flex; flex-direction: column; align-items: center; }
+.sim-silhouette svg.mascotte { position: relative; z-index: 1; margin-bottom: -30px; }
+svg.balance { position: relative; z-index: 2; width: 170px; height: 74px; overflow: visible; }
+#aiguille { transform-box: view-box; transform-origin: 85px 46px; transition: transform 1.2s var(--rebond); }
+.grand { font: 400 96px/1 "Bangers", cursive; letter-spacing: .02em; font-variant-numeric: tabular-nums; transition: color .6s; display: flex; align-items: baseline;
+  -webkit-text-stroke: 2.5px var(--encre); paint-order: stroke fill; text-shadow: 4px 4px 0 var(--encre); }
+.grand .unite { font-size: 48px; margin-left: 4px; }
+.grand.pulse { animation: boing .6s var(--rebond); }
+.sim-libelle { margin: 4px 0 2px; font-size: 16px; font-weight: 800; }
+.comparaison { color: var(--encre-3); font-size: 14px; margin: 0; font-weight: 700; }
+
+/* ---------- Tuiles, étapes, deux colonnes ---------- */
+.tuiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; }
+.tuile { padding: 14px 16px; border-radius: 14px; background: var(--papier); border: 2.5px solid var(--encre); box-shadow: var(--ombre-petite); }
+.tuile-valeur { font: 400 40px/1.05 "Bangers", cursive; letter-spacing: .03em; font-variant-numeric: tabular-nums; }
+.tuile-libelle { color: var(--encre-2); font-size: 13px; margin-top: 4px; font-weight: 700; line-height: 1.4; }
+.grille-deux { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 20px; }
+.grille-deux p { margin: 0; font-size: 14.5px; line-height: 1.65; }
+.etapes { list-style: none; padding: 0; margin: 0; counter-reset: e; }
+.etapes > li { counter-increment: e; position: relative; padding: 0 0 22px 58px; font-size: 14.5px; }
+.etapes > li::before { content: counter(e); position: absolute; left: 0; top: -4px; width: 42px; height: 42px; border-radius: 50%;
+  background: var(--jaune); border: 2.5px solid var(--encre); box-shadow: 2px 2px 0 var(--encre);
+  font: 400 24px/38px "Bangers", cursive; text-align: center; }
+.etapes > li strong { display: block; font-size: 15.5px; margin-bottom: 2px; }
+
+/* ---------- Page 4 : portraits des groupes (une mascotte par groupe) ---------- */
+.portraits { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+.portrait { display: grid; grid-template-columns: 74px 1fr; gap: 4px 12px; padding: 14px 16px; border-radius: 16px; background: var(--papier);
+  border: 2.5px solid var(--encre); box-shadow: var(--ombre-petite); transition: transform .4s var(--rebond), box-shadow .4s var(--rebond); }
+.portrait:hover { box-shadow: 6px 6px 0 var(--encre); }
+.portrait svg.mascotte { grid-row: 1 / span 3; width: 74px; height: 111px; align-self: end; }
+.portrait:hover svg.mascotte { animation: saut .7s var(--rebond); }
+@keyframes saut { 30% { transform: translateY(-22px); } 60% { transform: translateY(0) scale(1.08, .9); } }
+.portrait-tete { display: flex; align-items: center; justify-content: space-between; }
+.portrait-nom { font: 400 20px "Bangers", cursive; letter-spacing: .05em; display: flex; align-items: center; gap: 4px; }
+.portrait-nom .note { margin: 0 0 0 4px; font: 700 12px "Nunito"; }
+.portrait-risque { font: 400 28px "Bangers", cursive; letter-spacing: .03em; -webkit-text-stroke: 1.5px var(--encre); paint-order: stroke fill; }
+.portrait ul { list-style: none; padding: 0; margin: 0; font-size: 13px; font-weight: 600; color: var(--encre-2); }
+.portrait li { padding: 1px 0; }
+.jauge { height: 12px; border-radius: 7px; background: var(--blanc); border: 2px solid var(--encre); overflow: hidden; }
+.jauge > span { display: block; height: 100%; transform-origin: left; animation: remplir 1.3s var(--rebond) both; }
+@keyframes remplir { from { transform: scaleX(0); } }
+
+/* ---------- Divers ---------- */
+.shiny-output-error-validation { color: var(--encre-2); border: 2.5px dashed var(--encre); border-radius: 14px; padding: 16px; text-align: center; font-weight: 700; }
+.pied { position: relative; z-index: 1; text-align: center; color: var(--encre-3); font-size: 13px; font-weight: 700; padding: 30px 20px 50px; }
+.action-button:focus { outline: none; }
+
+/* ============================================================
+   Effets
+   ============================================================ */
+
+/* Transition : la mascotte s'accroche au plafond, la page tombe */
+.plafond { position: fixed; top: 0; left: 0; right: 0; height: 16px; z-index: 21; background: var(--encre); transform: translateY(-100%);
+  transition: transform .3s var(--doux); pointer-events: none; }
+.plafond::after { content: ""; position: absolute; left: 50%; top: 10px; width: 90px; height: 14px; margin-left: -45px; background: #8B8577; border: 2.5px solid var(--encre); border-radius: 7px; }
+.plafond.visible { transform: none; }
+.suspendue { position: fixed; top: 12px; left: 50%; width: 170px; height: 255px; margin-left: -85px; z-index: 22; pointer-events: none;
+  transform: translateY(-115%); transition: transform .5s var(--rebond); transform-origin: 50% 3%; }
+.suspendue.visible { transform: translateY(0); }
+.suspendue.balance { animation: balancier .9s ease-in-out infinite alternate; }
+.suspendue.lache { transition: transform .75s var(--chute); transform: translateY(130vh) rotate(28deg); animation: none; }
+@keyframes balancier { from { rotate: -8deg; } to { rotate: 8deg; } }
+.tab-pane.tombe { animation: tombe .75s var(--chute) forwards; transform-origin: 30% 0; pointer-events: none; }
+@keyframes tombe { 15% { transform: translateY(-14px) rotate(-1.5deg); } 100% { transform: translateY(115vh) rotate(9deg); } }
+.tab-pane.arrive { animation: arrive .9s var(--rebond) both; }
+@keyframes arrive { 0% { transform: translateY(-90vh) rotate(-4deg); } 70% { transform: translateY(12px) scaleY(.97); } }
+.onomatopee { position: fixed; z-index: 23; left: 50%; top: 40%; pointer-events: none; opacity: 0;
+  font: 400 120px "Bangers", cursive; color: var(--jaune); -webkit-text-stroke: 4px var(--encre); paint-order: stroke fill; text-shadow: 7px 7px 0 var(--encre); }
+.onomatopee.paf { animation: paf .9s var(--rebond) forwards; }
+@keyframes paf { 0% { opacity: 1; transform: translate(-50%, -50%) scale(0) rotate(-20deg); } 35% { opacity: 1; transform: translate(-50%, -50%) scale(1.15) rotate(-8deg); }
+                 100% { opacity: 0; transform: translate(-50%, -50%) scale(1) rotate(-6deg); } }
+
+/* Graphiques en gélée */
+.gelee .barlayer .trace { transform-box: fill-box; transform-origin: 50% 100%; animation: gelee .95s var(--rebond); }
+.gelee.horizontal .barlayer .trace { transform-origin: 0 50%; animation-name: gelee-h; }
+@keyframes gelee { 0% { transform: scale(1.12, .8); } 35% { transform: scale(.9, 1.12); } 60% { transform: scale(1.05, .95); } 100% { transform: none; } }
+@keyframes gelee-h { 0% { transform: scale(.8, 1.12); } 35% { transform: scale(1.12, .9); } 60% { transform: scale(.95, 1.05); } 100% { transform: none; } }
+.barlayer .point path { transform-box: fill-box; transform-origin: 50% 100%; }
+.horizontal .barlayer .point path { transform-origin: 0 50%; }
+.barlayer .point.tremble path { animation: tremble .6s var(--rebond); }
+.horizontal .barlayer .point.tremble path { animation-name: tremble-h; }
+@keyframes tremble { 25% { transform: scale(1.1, .88); } 55% { transform: scale(.94, 1.07); } }
+@keyframes tremble-h { 25% { transform: scale(.88, 1.1); } 55% { transform: scale(1.07, .94); } }
+
+/* Curseur cartoon */
+.curseur-anneau, .curseur-point { position: fixed; top: 0; left: 0; z-index: 30; pointer-events: none; border-radius: 50%; }
+.curseur-anneau { width: 34px; height: 34px; margin: -17px 0 0 -17px; border: 2.5px solid var(--encre);
+  transition: width .35s var(--rebond), height .35s var(--rebond), margin .35s var(--rebond), background .2s; }
+.curseur-anneau.survol { width: 58px; height: 58px; margin: -29px 0 0 -29px; background: rgba(247, 210, 62, .5); }
+.curseur-anneau.presse { width: 26px; height: 26px; margin: -13px 0 0 -13px; background: rgba(217, 69, 47, .6); }
+.curseur-point { width: 7px; height: 7px; margin: -3.5px 0 0 -3.5px; background: var(--rouge); border: 1.5px solid var(--encre); }
+.aimante { transition: transform .3s var(--rebond) !important; }
+
+/* Inclinaison */
+.message, .portrait, .tuile, .coque.sans-graphique { transform-style: preserve-3d; position: relative; }
+.incline { transition: transform .12s linear !important; }
+
+/* Pari « loterie » */
+.paris .radio-inline.tire span { background: var(--jaune); color: var(--encre); transform: translate(-2px, -4px) rotate(-3deg) scale(1.06); box-shadow: 5px 6px 0 var(--encre); }
+.paris .radio-inline.gagnant span { background: var(--vert); color: var(--encre); transform: scale(1.15) rotate(-3deg); box-shadow: 6px 6px 0 var(--encre); animation: victoire .8s var(--rebond); }
+@keyframes victoire { 30% { transform: scale(1.3) rotate(-8deg); } 60% { transform: scale(1.1) rotate(2deg); } }
+.verdict { max-height: 0; opacity: 0; overflow: hidden; font: 400 26px "Bangers", cursive; letter-spacing: .04em; transition: all .5s var(--rebond); }
+.verdict strong { font-weight: 400; color: var(--rouge); }
+.verdict.visible { max-height: 90px; opacity: 1; margin-top: 16px; }
+.confettis { position: fixed; inset: 0; z-index: 25; pointer-events: none; }
+#voir_reponse:disabled { opacity: .7; cursor: progress; }
+
+/* Compagnon de défilement */
+.compagnon { position: fixed; right: 22px; bottom: 22px; z-index: 9; display: flex; align-items: flex-end; gap: 10px; padding: 10px 16px 12px 8px;
+  border-radius: 18px; background: var(--blanc); border: 3px solid var(--encre); box-shadow: var(--ombre);
+  opacity: 0; transform: translateY(40px) rotate(4deg); pointer-events: none; transition: opacity .4s, transform .6s var(--rebond); }
+.compagnon.visible { opacity: 1; transform: rotate(-1.5deg); }
+.compagnon svg.mascotte { width: 62px; height: 93px; }
+.compagnon-texte { display: flex; flex-direction: column; min-width: 150px; padding-bottom: 6px; }
+.compagnon-titre { font: 400 15px "Bangers", cursive; letter-spacing: .06em; color: var(--encre-3); }
+.compagnon-niveau { font: 400 24px "Bangers", cursive; letter-spacing: .04em; }
+.compagnon-barre { height: 12px; border-radius: 7px; background: var(--papier); border: 2px solid var(--encre); overflow: hidden; margin-top: 4px; }
+.compagnon-barre span { display: block; height: 100%; transform-origin: left; transform: scaleX(0); background: linear-gradient(90deg, #3D78B0, #74C488, #E8933A, #B43B2E); background-size: 150px 100%; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  .reveal { opacity: 1; transform: none; }
+}
+@media (pointer: coarse) { .curseur-anneau, .curseur-point { display: none; } }
+@media (max-width: 991px) {
+  .hero { grid-template-columns: 1fr; min-height: auto; }
+  .grille-deux, .variables-afdm, .grille-reglages { grid-template-columns: 1fr; }
+  .theme { grid-template-columns: 1fr; }
+  .marque { display: none; } .num-nav { display: none; }
+  .lien-nav { padding: 7px 10px; font-size: 12.5px; }
+}
+@media (max-width: 767px) {
+  .container-fluid { padding: 0 16px; }
+  .legende-carte { border-left: 0; padding-left: 0; margin-top: 16px; }
+  .compagnon { right: 10px; bottom: 10px; }
+}
