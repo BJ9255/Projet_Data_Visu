@@ -1,8 +1,5 @@
-# Contrôle de bout en bout des données → résultats → sorties Shiny.
-# Rscript --vanilla -e 'source("checks/verify-parcours.R")'
+# Données → proportions → χ² / Fisher → AFDM → sorties Shiny.
 source("global.R")
-# Shiny charge l'interface et le serveur dans des environnements distincts.
-# Ne pas les charger dans globalenv(), ce qui masquerait des dépendances manquantes.
 stopifnot(exists("pages", envir = globalenv(), inherits = FALSE))
 environnement_ui <- new.env(parent = globalenv())
 environnement_server <- new.env(parent = globalenv())
@@ -14,72 +11,56 @@ server <- environnement_server$server
 stopifnot(nrow(data) == 1610, ncol(data) == 15, !anyNA(data),
   identical(as.integer(effectifs_niveaux), c(73L, 658L, 592L, 287L)),
   abs(part_surpoids_obesite - 879 / 1610) < 1e-12,
-  habitude_principale == "Frequence_Legumes",
   abs(information_plan - sum(afdm$eig[1:2, 2])) < 1e-12,
-  length(unique(groupes_profils)) == length(part_par_groupe),
-  all(diff(part_par_groupe) >= 0), sum(table(groupes_profils)) == nrow(data))
-stopifnot(identical(precalcul$multinomial$lev, niveaux),
-  sum(validation_modele$confusion) == nrow(data),
-  identical(as.integer(rowSums(validation_modele$confusion)), as.integer(effectifs_niveaux)),
-  isTRUE(all.equal(validation_modele$rappel, diag(validation_modele$confusion) / rowSums(validation_modele$confusion))),
-  abs(validation_modele$exactitude_equilibree - mean(validation_modele$rappel)) < 1e-12,
-  abs(validation_modele$exactitude - precalcul$exactitude_cv[["multinomial"]]) < 1e-6)
+  length(tests_independance) == 12, all(table_tests$conditions))
 
-# Vérification indépendante des tests qui fondent les messages principaux.
-for (v in c("Frequence_Legumes", "Repas_Principaux", "Fumeur")) {
-  reduit <- nnet::multinom(reformulate(setdiff(explicatives, v), response = "Niveau_Obesite"),
-                          data = data, trace = FALSE, maxit = 1000)
-  chi2 <- 2 * as.numeric(logLik(precalcul$multinomial) - logLik(reduit))
-  stopifnot(reduit$convergence == 0,
-            abs(chi2 - associations_ajustees$chi2[match(v, associations_ajustees$var)]) < 1e-7)
+# Reproduire chaque χ² et ses attendus indépendamment des sorties UI.
+for (v in variables_qualitatives) {
+  t <- tests_independance[[v]]
+  tab <- table(data[[v]], data$Niveau_Obesite)
+  attendu <- outer(rowSums(tab), colSums(tab)) / sum(tab)
+  statistique <- sum((tab - attendu)^2 / attendu)
+  ddl <- (nrow(tab) - 1) * (ncol(tab) - 1)
+  stopifnot(sum(tab) == 1610,
+    max(abs(t$attendu - attendu)) < 1e-10,
+    abs(t$chi2 - statistique) < 1e-10,
+    abs(t$p - pchisq(statistique, ddl, lower.tail = FALSE)) < 1e-12,
+    t$ddl == ddl)
 }
-stopifnot(nrow(associations_ajustees) == 14,
-  isTRUE(all.equal(associations_ajustees$p_holm, p.adjust(associations_ajustees$p, "holm"))),
-  p_ajustee("Frequence_Legumes") < .001, p_ajustee("Repas_Principaux") < .001,
-  p_ajustee("Fumeur") < .05,
-  table_or$p[table_or$var == "Fumeur"] > .05)
+# Le choix de Fisher porte sur les attendus, pas sur les zéros observés.
+petit <- matrix(c(0, 2, 2, 0), nrow = 2)
+f <- test_independance(petit)
+stopifnot(!f$conditions, f$methode == "Fisher exact",
+          abs(f$p - fisher.test(petit)$p.value) < 1e-12)
+transport <- tests_independance$Moyen_Transport
+stopifnot(transport$minimum_attendu < 5, transport$minimum_attendu >= 1,
+          transport$part_attendus_5 == .95, transport$conditions)
 
 html <- as.character(ui)
 stopifnot(length(pages) == 5, grepl('id="navigation_page"', html, fixed = TRUE),
           grepl('data-value="synthese"', html, fixed = TRUE),
           grepl(problematique, html, fixed = TRUE),
-          !grepl("Profil sain|Profil à risque|L'association du tabac disparaît", html),
-          !grepl('src="effets.js"', html, fixed = TRUE))
-for (v in explicatives) stopifnot(grepl(paste0('id="sim_', v, '"'), html, fixed = TRUE))
+          !grepl("Spearman|Kendall|multinomial|odds ratio|cotes proportionnelles|HCPC|Ward|Holm|sim_Age", html, ignore.case = TRUE))
 
 shiny::testServer(server, {
-  reglages <- setNames(profil_type, paste0("sim_", names(profil_type)))
-  do.call(session$setInputs, c(reglages, list(explorer_var = habitude_principale,
-    `hode-variable` = "Legumes", `hode-focus` = "", `hode-ellipses` = FALSE)))
-  stopifnot(abs(sum(probas()) - 1) < 1e-10, all(probas() >= 0), all(probas() <= 1))
+  session$setInputs(explorer_var = habitude_principale, test_var = habitude_principale,
+    test_attendus = FALSE, `hode-variable` = "Legumes", `hode-focus` = "", `hode-ellipses` = FALSE)
   for (page in names(pages)) session$setInputs(nav = page)
-
-  # Chaque caractéristique a des proportions et un message, y compris le transport nominal.
   for (v in explicatives) {
     session$setInputs(explorer_var = v)
     z <- jsonlite::fromJSON(output$explorer_barres, simplifyVector = FALSE)
-    stopifnot(length(z$x$data) > 0, nzchar(output$explorer_message$html))
-    taux <- data.frame(groupe = data_classes[[v]], poids = data$Niveau_Obesite) %>%
-      count(groupe, poids) %>% group_by(groupe) %>% summarise(somme = sum(n / sum(n)), .groups = "drop")
-    stopifnot(all(abs(taux$somme - 1) < 1e-12))
+    stopifnot(length(z$x$data) > 0, nzchar(output$explorer_message$html), nzchar(output$observer_suite$html))
   }
-
-  # Tous les graphiques et messages du parcours se rendent sans erreur.
-  for (nom in c("classement", "sim_barres", "sim_effets", "odds_ratios", "profils_obesite", "hode-carte")) {
-    z <- jsonlite::fromJSON(output[[nom]], simplifyVector = FALSE)
-    stopifnot(length(z$x$data) > 0)
+  for (v in variables_qualitatives) {
+    session$setInputs(test_var = v, test_attendus = FALSE)
+    stopifnot(identical(test_selection(), tests_independance[[v]]),
+              nzchar(output$test_resultat$html), nzchar(output$test_conditions$html),
+              grepl("Effectifs observés", output$test_tableau$html))
+    session$setInputs(test_attendus = TRUE)
+    stopifnot(grepl("Effectifs attendus", output$test_tableau$html))
   }
-  for (nom in c("ajustement_messages", "associations_table", "modele_qualite", "profils_message", "profils_portraits", "sim_resultat", "sim_levier")) {
-    stopifnot(nzchar(output[[nom]]$html))
-  }
-  stopifnot(!grepl("disparaît|explication probable", output$ajustement_messages$html),
-            !grepl("Catégorie de poids :", output$profils_portraits$html, fixed = TRUE))
-
-  # Les nouveaux réglages de taille et d'antécédents sont réellement utilisés.
-  session$setInputs(sim_Taille_cm = min(data$Taille_cm), sim_Antecedents_Familiaux = "Oui")
-  stopifnot(profil()$Taille_cm == min(data$Taille_cm), profil()$Antecedents_Familiaux == "Oui")
-  session$setInputs(sim_Age = max(data$Age), sim_Frequence_Legumes = "Rarement", sim_Repas_Principaux = "Plus de 3")
-  stopifnot(abs(sum(probas()) - 1) < 1e-10,
-    isTRUE(all.equal(probas(), probas_profil(profil()))), nzchar(output$sim_resultat$html))
+  stopifnot(nzchar(output$tests_resume$html))
+  z <- jsonlite::fromJSON(output[["hode-carte"]], simplifyVector = FALSE)
+  stopifnot(length(z$x$data) > 0)
 })
-cat("PASS — 5 étapes ; chiffres cohérents ; tests ajustés reproduits ; 14 comparaisons ; 14 réglages ; graphiques et messages Shiny\n")
+cat("PASS — 5 étapes, 14 comparaisons descriptives, 12 χ² reproduits, Fisher exact, tableaux observés/attendus, AFDM et sorties Shiny\n")

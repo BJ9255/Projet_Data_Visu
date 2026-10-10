@@ -1,4 +1,4 @@
-# Une question, cinq étapes : cadrer → observer → ajuster → regrouper → conclure.
+# Une question, cinq étapes : cadrer → observer → tester → explorer l’AFDM → conclure.
 pastille <- function(texte) span(class = "pastille-sur", texte)
 entete <- function(etape, titre, question) {
   div(class = "entete reveal", pastille(etape), h1(HTML(titre)), p(class = "question", question))
@@ -13,7 +13,6 @@ carte <- function(titre = NULL, ..., largeur = 12, sous_titre = NULL, classe = "
   column(largeur, bloc_carte(titre, ..., sous_titre = sous_titre, classe = classe))
 }
 rangee <- function(...) div(class = "row rangee", ...)
-choix_sim <- function(v) selectInput(paste0("sim_", v), libelles[[v]], levels(data[[v]]), selected = profil_type[[v]])
 suite <- function(page, texte) div(class = "suite-parcours",
   tags$button(class = "btn-ile", `data-aller` = page, span(texte), span(class = "bulle", ico("arrow-right"))))
 
@@ -90,7 +89,7 @@ ui <- fluidPage(
         ),
         tags$details(class = "details-methode", tags$summary("Source et préparation des données"),
           p("Koklu et Sulak (2024) présentent une enquête en ligne auprès de 1 610 personnes en Turquie. Nous réutilisons les catégories du fichier, avec des libellés français."),
-          p("Âge et taille restent quantitatifs dans l’AFDM et les modèles. Pour les seules comparaisons en barres, ils sont regroupés en tranches d’âge et quartiles de taille. Aucune valeur manquante dans les 15 colonnes utilisées."),
+          p("Âge et taille restent quantitatifs dans l’AFDM. Pour les seules comparaisons en barres, ils sont regroupés en tranches d’âge et quartiles de taille. Aucune valeur manquante dans les 15 colonnes utilisées."),
           a(href = source_article, target = "_blank", rel = "noopener", "Consulter l’article et son tableau de codage")),
         suite("explorer", "Observer les associations")
       )
@@ -104,10 +103,44 @@ ui <- fluidPage(
           carte("Comparer les réponses", largeur = 7, sous_titre = "Chaque barre représente 100 % des personnes ayant donné cette réponse ; les effectifs sont affichés",
             selectInput("explorer_var", "Caractéristique à comparer", choix(explicatives), selected = habitude_principale),
             plotlyOutput("explorer_barres", height = "360px"), uiOutput("explorer_message")),
-          carte("Situer l’association brute", largeur = 5, sous_titre = "Corrélation de Spearman · les caractéristiques binaires sont orientées comme indiqué au survol",
-            plotlyOutput("classement", height = "440px"), uiOutput("classement_transport"),
-            p(class = "note", "La longueur indique |ρ| ; le signe donne le sens. Une corrélation brute ne tient pas compte des autres caractéristiques. Cliquez sur une barre pour la détailler."))
+          carte("Lire une comparaison", largeur = 5,
+            div(class = "messages",
+              div(class = "message", div(strong("Une barre = une réponse"), span("Chaque barre totalise 100 %. Les effectifs sont différents : regardez toujours le nombre de personnes."))),
+              div(class = "message", div(strong("Un écart est une observation"), span("Le graphique montre comment les catégories se répartissent. Il ne démontre pas qu’une habitude cause un changement de poids."))),
+              div(class = "message", div(strong("Le test vient ensuite"), span("Le χ² examine l’indépendance entre deux variables qualitatives à partir des effectifs, sur l’ensemble du tableau.")))),
+            uiOutput("observer_suite"))
         ),
+        suite("compte", "Tester l’indépendance")
+      )
+    ),
+    tabPanel("Tester", value = "compte",
+      div(class = "section",
+        entete("Étape 03 · Tester", "Une association <em>statistique ?</em>",
+               "Les réponses et les catégories de poids sont-elles indépendantes dans le tableau observé ?"),
+        div(class = "repere-etape", strong("H₀ : les deux variables sont indépendantes. "),
+            "Le test compare les effectifs observés aux effectifs attendus sous cette hypothèse."),
+        rangee(
+          carte("Choisir une comparaison", largeur = 5,
+            selectInput("test_var", "Variable qualitative", choix(variables_qualitatives), selected = habitude_principale),
+            uiOutput("test_resultat"), uiOutput("test_conditions")),
+          carte("Le tableau de contingence", largeur = 7, sous_titre = "Lignes : réponses · colonnes : catégories de poids",
+            checkboxInput("test_attendus", "Afficher les effectifs attendus sous H₀", FALSE),
+            uiOutput("test_tableau"),
+            p(class = "note", "Effectif attendu = total de la ligne × total de la colonne / effectif total. Les effectifs attendus peuvent être décimaux ; les observations sont des personnes."))
+        ),
+        rangee(carte("Vue d’ensemble des tests", uiOutput("tests_resume"),
+          div(class = "encadre", "Ces 12 comparaisons sont exploratoires. Les p-values sont présentées sans correction pour les comparaisons multiples ; le seuil de 5 % s’applique à chaque test, pas à l’ensemble. Une p-value ne mesure pas la force du lien."))),
+        tags$details(class = "details-methode", tags$summary("Pourquoi χ² ou Fisher ?"),
+          p("Le χ² d’indépendance convient au croisement de deux variables qualitatives. Nous vérifions les effectifs attendus : aucun inférieur à 1 et au moins 80 % supérieurs ou égaux à 5. Si ces conditions ne sont pas satisfaites, nous utilisons le test exact de Fisher."),
+          p("Dans les 12 tableaux de cet échantillon, les conditions retenues pour le χ² sont satisfaites. L’enquête est analysée comme une réponse par personne ; la représentativité de l’échantillon n’est pas établie."),
+          p("Le test de Student compare des moyennes d’une variable quantitative entre deux groupes. Il ne répond pas directement à notre question sur la répartition des quatre catégories de poids.")),
+        suite("profils", "Explorer les profils avec l’AFDM")
+      )
+    ),
+    tabPanel("Explorer l’AFDM", value = "profils",
+      div(class = "section",
+        entete("Étape 04 · Explorer", "Les profils dans <em>leur ensemble</em>",
+               "Comment les habitudes et les caractéristiques individuelles s’organisent-elles sur une même carte ?"),
         rangee(carte("La carte des profils", sous_titre = "Analyse factorielle des données mixtes (AFDM) · une vue d’ensemble exploratoire",
           div(class = "lecture-carte",
             div(strong("Un point = une personne"), p("Deux points proches ont des caractéristiques proches sur les dimensions affichées.")),
@@ -120,65 +153,6 @@ ui <- fluidPage(
             p(nom_axe(1)), p(nom_axe(2)),
             p("Les noms des axes décrivent leurs variables les plus associées. Les pourcentages indiquent l’inertie représentée. Les axes ne constituent pas une échelle de risque."))
         )),
-        suite("compte", "Prendre les autres caractéristiques en compte")
-      )
-    ),
-    tabPanel("Ajuster", value = "compte",
-      div(class = "section",
-        entete("Étape 03 · Ajuster", "Le lien brut <em>ne suffit pas</em>",
-               "Quelles associations restent détectables quand les 13 autres caractéristiques sont prises en compte ?"),
-        rangee(
-          carte("Ce que l’ajustement apporte", largeur = 7, uiOutput("ajustement_messages")),
-          carte("Associations ajustées", largeur = 5, sous_titre = "Tests globaux dans le modèle multinomial complet",
-            uiOutput("associations_table"),
-            p(class = "note", "Chaque test compare le modèle complet au modèle sans la variable étudiée. Les p-values sont corrigées par Holm sur 14 tests. Ce tableau indique une évidence statistique, pas une taille d’effet ni un classement des causes."))
-        ),
-        div(class = "intro-resultats reveal", pastille("Expérience interactive"), h2("Explorer un profil fictif"),
-            p("Le modèle estime les catégories associées à une combinaison de réponses. Changer une réponse ici modifie un calcul, sans démontrer l’effet réel d’un changement d’habitude.")),
-        rangee(
-          carte("Construire une comparaison", largeur = 5, sous_titre = "Les 14 caractéristiques sont accessibles ; les valeurs initiales forment un profil de référence fictif",
-            div(class = "profils",
-              tags$button(class = "pilule action-button", id = "profil_type", "Réinitialiser"),
-              tags$button(class = "pilule action-button", id = "profil_sain", "Légumes : toujours"),
-              tags$button(class = "pilule action-button", id = "profil_risque", "Repas : plus de 3")),
-            div(class = "grille-reglages",
-              sliderInput("sim_Age", "Âge", min = min(data$Age), max = max(data$Age), value = profil_type$Age, step = 1),
-              sliderInput("sim_Taille_cm", "Taille (cm)", min = min(data$Taille_cm), max = max(data$Taille_cm), value = profil_type$Taille_cm, step = 1),
-              choix_sim("Genre"), choix_sim("Antecedents_Familiaux"), lapply(habitudes_sim, choix_sim)),
-            div(class = "bas-carte", uiOutput("sim_levier"))),
-          carte("Répartition estimée par le modèle", largeur = 7, sous_titre = "Régression logistique multinomiale · proportions estimées pour le profil fictif",
-            div(class = "sim-tete", div(class = "sim-chiffre",
-              div(class = "grand", span(id = "sim_pct", "—"), span(class = "unite", "%")),
-              p(class = "sim-libelle", "estimés en surpoids ou en obésité pour ce profil"), uiOutput("sim_resultat"))),
-            plotlyOutput("sim_barres", height = "160px"), plotlyOutput("sim_effets", height = "320px"),
-            p(class = "note", "Pour chaque habitude, le segment relie la plus petite à la plus grande estimation parmi ses réponses possibles, toutes les autres caractéristiques fixées. Le point représente votre choix."),
-            div(class = "encadre", strong("Portée du simulateur. "), "Ce calcul décrit le modèle ajusté sur cet échantillon. Il n’est ni un diagnostic ni une prédiction du risque futur. Certaines combinaisons peuvent être peu représentées ; la calibration des probabilités n’a pas été évaluée."))
-        ),
-        rangee(carte("Validation et choix des modèles", uiOutput("modele_qualite"))),
-        tags$details(class = "details-methode", tags$summary("Annexe exploratoire : les odds ratios du modèle ordinal"),
-          div(class = "encadre", paste0("Attention : l’hypothèse des cotes proportionnelles est rejetée pour ", precalcul$cotes_rejetees,
-            " variables sur ", precalcul$cotes_testees, " testées. Les odds ratios et leurs intervalles sont conditionnels à ce modèle inadéquat ; ils ne fondent pas les conclusions principales.")),
-          plotlyOutput("odds_ratios", height = "620px"),
-          p(class = "note", "OR > 1 : cote plus élevée dans ce modèle ; OR < 1 : cote plus faible, par rapport à la modalité de référence. La cote n’est pas une probabilité. L’âge et la taille sont exprimés par 10 ans et 10 cm.")),
-        suite("profils", "Regrouper les profils de vie")
-      )
-    ),
-    tabPanel("Regrouper", value = "profils",
-      div(class = "section",
-        entete("Étape 04 · Regrouper", "Des profils de vie <em>contrastés</em>",
-               "Des groupes construits à partir des caractéristiques présentent-ils des répartitions de poids différentes ?"),
-        rangee(
-          carte("Comparer les groupes", largeur = 7, sous_titre = "Groupes ordonnés après construction par part croissante de surpoids ou d’obésité · effectifs affichés",
-            plotlyOutput("profils_obesite", height = "420px"), uiOutput("profils_message")),
-          carte("Comment sont-ils construits ?", largeur = 5,
-            tags$ol(class = "etapes",
-              tags$li(strong("La même AFDM que la carte"), "Les 14 caractéristiques sont actives ; la catégorie de poids est supplémentaire."),
-              tags$li(strong("Cinq dimensions pour regrouper"), paste0("Ward, puis consolidation HCPC, sur les 5 premiers axes (", fmt(information_classification, 1), " % de l’inertie). Le nombre de groupes est choisi automatiquement par HCPC.")),
-              tags$li(strong("La catégorie de poids intervient ensuite"), "Elle sert à comparer et ordonner les groupes après leur construction.")),
-            div(class = "encadre", "Une partition exploratoire : la stabilité des groupes et la sensibilité au nombre d’axes ou de groupes n’ont pas été évaluées. Les écarts sont descriptifs dans cet échantillon."))
-        ),
-        rangee(carte("Ce qui caractérise chaque groupe", sous_titre = "Trois modalités surreprésentées dans le groupe ; elles ne concernent pas nécessairement tous ses membres",
-          uiOutput("profils_portraits"))),
         suite("synthese", "Répondre à la problématique")
       )
     ),
@@ -187,19 +161,19 @@ ui <- fluidPage(
         entete("Étape 05 · Conclure", "Ce que nous <em>retenons</em>", problematique),
         div(class = "reponse-problematique reveal", span(class = "resultat-kicker", "Notre réponse"),
           h2("Des associations existent, mais leur lecture dépend du contexte."),
-          p("Les habitudes alimentaires présentent des associations brutes marquées avec les catégories de poids, également détectées dans le modèle ajusté. Les caractéristiques dessinent des groupes aux répartitions contrastées. La lecture dépend de la méthode et de ses hypothèses ; ces résultats ne permettent pas d’établir des causes.")),
+          p("Les répartitions des catégories de poids varient selon les réponses, notamment pour la consommation de légumes. Le χ² détecte une association dans ce tableau. L’AFDM permet d’explorer les caractéristiques conjointement, sur une projection partielle. Ces résultats décrivent l’échantillon et ne permettent pas d’établir des causes.")),
         div(class = "resultats-grille reveal", resultats_cles_ui()),
         rangee(
           carte("Pour notre public", largeur = 6,
             h3("Trois réflexes de lecture"), tags$ol(class = "etapes",
               tags$li(strong("Regarder les effectifs"), "Comparer des proportions avec leur dénominateur."),
-              tags$li(strong("Distinguer association brute et ajustée"), "Une relation peut dépendre d’autres caractéristiques."),
+              tags$li(strong("Distinguer observation et test"), "Le graphique décrit un écart ; le χ² teste l’indépendance, sans démontrer une cause."),
               tags$li(strong("Questionner le sens du lien"), "Sans chronologie, on ne peut pas distinguer cause et conséquence."))),
           carte("Ce qui reste à vérifier", largeur = 6,
             tags$ul(class = "limites-liste",
               tags$li("Représentativité de l’enquête en ligne et qualité des réponses déclarées."),
               tags$li("Attribution des catégories de poids, non recalculable sans poids ni IMC."),
-              tags$li("Stabilité des groupes, calibration et validation externe du modèle."),
+              tags$li("Robustesse de la lecture de l’AFDM au choix des axes et généralisation à d’autres données."),
               tags$li("Temporalité des liens, à étudier avec des données longitudinales.")))
         ),
         div(class = "phrase-finale reveal", p("Une visualisation utile rend les liens visibles ", strong("et leurs limites compréhensibles."))),
@@ -209,5 +183,5 @@ ui <- fluidPage(
       )
     )
   ),
-  tags$footer(class = "pied", "1 610 réponses · Associations observées · AFDM / HCPC / modèle multinomial · Projet M2 · R / Shiny")
+  tags$footer(class = "pied", "1 610 réponses · Associations observées · Proportions / χ² / AFDM · Projet M2 · R / Shiny")
 )

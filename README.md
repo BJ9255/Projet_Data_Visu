@@ -9,10 +9,10 @@ Application R / Shiny construite à partir de 1 610 réponses à une enquête en
 | Étape | Question | Support |
 |---|---|---|
 | Cadrer | Pour qui, dans quel but et avec quelles données ? | Problématique, échantillon, trois messages clés |
-| Observer | Comment les répartitions varient-elles selon les réponses ? | Proportions avec effectifs, Spearman, carte AFDM |
-| Ajuster | Quelles associations sont détectées en prenant les autres caractéristiques en compte ? | Tests multinomiaux ajustés, simulateur fictif, validation |
-| Regrouper | Quels profils proches présentent des répartitions différentes ? | HCPC sur la même AFDM, descriptions des groupes |
-| Conclure | Que retenir et que reste-t-il à vérifier ? | Réponse, résultats, limites et prolongements |
+| Observer | Comment les répartitions varient-elles selon les réponses ? | Proportions avec effectifs |
+| Tester | Deux variables qualitatives sont-elles indépendantes ? | Tableaux de contingence, χ², attendus et conditions ; Fisher en repli |
+| Explorer l’AFDM | Comment les caractéristiques s’organisent-elles ensemble ? | Carte interactive d’une AFDM sur données mixtes |
+| Conclure | Que retenir et que reste-t-il à vérifier ? | Réponse, résultats, limites |
 
 ## Lancer le projet
 
@@ -35,16 +35,15 @@ Le menu propose les cinq étapes. Le mode présentation agrandit les textes seco
 ## Méthodes et périmètre
 
 - 14 caractéristiques actives dans l’AFDM : 12 qualitatives, âge et taille quantitatifs. La catégorie de poids est supplémentaire.
-- Carte sur deux axes : 19,5 % de l’inertie. La HCPC utilise les cinq premiers axes : 35,3 %, méthode de Ward puis consolidation, graine 2024.
-- Associations brutes : Spearman sur les variables ordonnées/binaires ; V de Cramér pour le transport nominal. Les p-values de Spearman sont corrigées par Holm sur les 13 tests.
-- Associations ajustées : tests globaux du rapport de vraisemblance dans le multinomial complet ; correction de Holm sur 14 tests.
-- Simulateur : estimation de catégories pour un profil fictif dans ce modèle, sans prédiction de risque futur.
-- Validation multinomiale : reproduction des 10 plis aléatoires, non stratifiés, graine 2024 ; exactitude moyenne 74,7 %, exactitude équilibrée 68,3 %, performances par catégorie et matrice hors pli.
-- L’ordinal est conservé en annexe exploratoire, car l’hypothèse des cotes proportionnelles est rejetée. Il ne fonde pas les messages principaux.
+- Carte sur deux axes : 19,5 % de l’inertie ; sélection des modalités, pictogrammes, effectifs et répartition observée.
+- Comparaisons descriptives : proportions dans chaque réponse. Âge en tranches et taille en quartiles pour ces seuls graphiques.
+- Tests d’indépendance : les 12 caractéristiques qualitatives d’origine sont croisées avec les quatre catégories de poids.
+- Conditions du χ² retenues : aucun attendu < 1 et au moins 80 % des cellules avec un attendu ≥ 5. Tous les tableaux actuels satisfont ces conditions ; Fisher exact est prévu en repli.
+- P-values brutes : comparaisons exploratoires, sans correction multiple. Le seuil de 5 % concerne chaque test individuellement.
 
-Les caches des nouveaux tests et de la validation sont invalidés lorsque les données ou le modèle précalculé changent. L’exactitude reproduite est comparée au cache initial pour détecter une divergence.
+Le site présente des associations observées, sans ajustement sur d’autres caractéristiques. Il ne prédit pas un risque individuel et ne comporte plus de simulateur de régression ni de classification automatique. Les versions antérieures sont conservées dans l’historique Git.
 
-Il s’agit d’associations dans un échantillon : représentativité, causalité, stabilité des groupes, calibration et validité externe ne sont pas établies. Sans poids ni IMC dans le fichier, les catégories fournies ne peuvent pas être recalculées.
+La représentativité et la causalité ne sont pas établies. Sans poids ni IMC dans le fichier, les catégories fournies ne peuvent pas être recalculées.
 
 ## Préparer l’oral
 
@@ -57,7 +56,7 @@ Rscript --vanilla -e 'source("checks/verify-parcours.R")'
 Rscript --vanilla -e 'source("checks/verify-carte-hode.R")'
 ```
 
-Le premier contrôle vérifie les chiffres, les tests ajustés, les métriques et le rendu des sorties Shiny. Le second exerce toutes les modalités de la carte, les pictogrammes, les effectifs et la stabilité des axes. Ces contrôles ne remplacent pas une inspection du rendu dans le navigateur et sur le vidéoprojecteur.
+Le premier contrôle vérifie les effectifs, les χ², le choix de Fisher, les attendus et le rendu des sorties Shiny. Le second exerce toutes les modalités de la carte, les pictogrammes, les effectifs et la stabilité des axes. Ces contrôles ne remplacent pas une inspection du rendu dans le navigateur et sur le vidéoprojecteur.
 
 ## Contributions
 

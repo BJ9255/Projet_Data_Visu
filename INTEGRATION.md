@@ -15,14 +15,18 @@ Le fichier Excel est identique dans les deux versions (vérifié par comparaison
 
 La carte interactive remplace l’ancien affichage de Baptiste dans l’étape « Observer ». Elle reprend les pictogrammes, la sélection des modalités et les effectifs de Hodé, avec la police Nunito, les couleurs de catégories et les cadres du projet commun. Les points utilisent aussi quatre formes pour faciliter la distinction des catégories.
 
-Les coordonnées proviennent désormais de l’AFDM de Baptiste : les 14 caractéristiques sont actives et la classe de poids est supplémentaire. La classification utilise cette même AFDM. La version autonome de Hodé reste inchangée dans `apps/observatoire`.
+Les coordonnées proviennent désormais de l’AFDM de Baptiste : les 14 caractéristiques sont actives et la classe de poids est supplémentaire. La carte conserve cette même AFDM. La version autonome de Hodé reste inchangée dans `apps/observatoire`.
+
+## Parcours compatible avec le cours
+
+L’application commune utilise maintenant les proportions, le χ² d’indépendance (Fisher exact en repli) et l’AFDM. Le parcours comprend Cadrer, Observer, Tester, Explorer l’AFDM et Conclure. Les tests et les textes de synthèse sont calculés dans `R/parcours.R`.
+
+La classification automatique et les régressions ne sont plus chargées dans le parcours courant. Les calculs et caches antérieurs restent dans l’historique et dans les fichiers non chargés. La version autonome de Hodé reste inchangée.
 
 ## Vérification
 
-Le parcours commun comprend maintenant cinq étapes, de la problématique à la conclusion. Les analyses ajustées principales utilisent des tests globaux multinomiaux ; l’ordinal, dont l’hypothèse est rejetée, est conservé en annexe. La validation croisée multinomiale a été reproduite et complétée par les performances par catégorie. Les chiffres de synthèse sont calculés dans `R/parcours.R`, les performances dans `R/validation.R`.
+`checks/verify-parcours.R` reproduit les 12 χ², les effectifs attendus, le choix de Fisher et le rendu des sorties Shiny dans des environnements UI et serveur distincts.
 
-`checks/verify-parcours.R` contrôle les effectifs, les conclusions, les tests ajustés, les métriques et les sorties Shiny du parcours. Le speech et les réponses aux questions du jury figurent dans `PRESENTATION_M2.md`.
+`checks/verify-carte-hode.R` vérifie les coordonnées, toutes les modalités, les images, les axes fixes, les effectifs et les ellipses.
 
-`checks/verify-carte-hode.R` vérifie l’égalité numérique des coordonnées avec l’AFDM commune, toutes les modalités, les images, les axes fixes, les effectifs et les ellipses. La page ne contient plus l’ancien graphique.
-
-L’application commune est lancée sur le port 3840. Les changements sont portés uniquement par la branche `integration/hode-observatoire`.
+Le speech et les réponses aux questions du jury figurent dans `PRESENTATION_M2.md`. L’application est lancée sur le port 3840, sur la branche `integration/hode-observatoire`.

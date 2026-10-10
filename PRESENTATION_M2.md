@@ -1,168 +1,130 @@
-# Présentation M2 — Habitudes de vie et catégories de poids
+# Présentation M2 — Proportions, χ² et AFDM
 
-## Le cadrage à annoncer
+## Notre cadrage
 
-**Cible :** étudiants et acteurs de prévention qui souhaitent comprendre les associations entre habitudes de vie et catégories de poids.
+**Cible :** étudiants et acteurs de prévention souhaitant comprendre les associations entre habitudes de vie et catégories de poids.
 
 **Problématique :** « Quelles habitudes sont associées aux catégories de poids dans cet échantillon, et comment s’organisent-elles en profils de vie ? »
 
 **But :** rendre les associations observées compréhensibles, explorer les profils et expliciter les limites de leur interprétation.
 
-**Support :** l’application Shiny commune, en cinq étapes. La carte AFDM intervient après un graphique de proportions accessible. La synthèse apporte une réponse explicite à la question initiale.
+**Parcours :** Cadrer → Observer → Tester → Explorer l’AFDM → Conclure.
 
-Les informations sur l’enquête et le codage proviennent de [Koklu et Sulak (2024)](https://doi.org/10.33484/sinopfbd.1445215), notamment du tableau 1 de l’[article](https://dergipark.org.tr/en/download/article-file/3764172). Les chiffres analytiques ci-dessous proviennent de notre fichier et de nos calculs, pas des performances des modèles de l’article.
+Les méthodes utilisées sont celles du cours : tableaux de proportions, test du χ² d’indépendance, Fisher si les conditions du χ² ne sont pas satisfaites, et AFDM. Le choix de l’AFDM repose sur la présence de variables quantitatives et qualitatives. Nous ne cherchons pas à utiliser toutes les méthodes vues en cours : chacune doit répondre à une question précise.
 
-## Speech — environ 6 à 8 minutes, à adapter au temps accordé
+Source du jeu de données : [Koklu et Sulak (2024)](https://doi.org/10.33484/sinopfbd.1445215). Les résultats ci-dessous sont calculés à partir du fichier du projet. Implémentation des tests : documentation officielle R du [χ²](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/chisq.test.html) et de [Fisher](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/fisher.test.html).
 
-### 1. Cadrer — environ 1 minute
+## Speech — environ 5 à 7 minutes
+
+### 1. Cadrer
 
 « Notre projet cherche à répondre à une question : quelles habitudes sont associées aux catégories de poids dans cet échantillon, et comment s’organisent-elles en profils de vie ?
 
-Nous avons choisi de nous adresser à des étudiants et à des acteurs de prévention. L’objectif est de leur permettre de lire des associations, de comparer les profils et de comprendre les limites de ces résultats.
+Nous nous adressons à des étudiants et à des acteurs de prévention qui souhaitent comprendre les associations observées et leurs limites. Le site permet d’explorer les données, de comparer des répartitions et de lire une carte de profils.
 
-Notre source est l’Obesity Dataset présenté par Koklu et Sulak en 2024. Le fichier contient 1 610 réponses à une enquête en ligne réalisée en Turquie, auprès de personnes âgées de 18 à 54 ans. Nous disposons de 14 caractéristiques, dont 10 habitudes de vie, et de quatre catégories de poids.
+Notre fichier contient 1 610 réponses à une enquête en ligne réalisée en Turquie, présentée par Koklu et Sulak en 2024. Les répondants ont entre 18 et 54 ans. Nous disposons de 14 caractéristiques : 10 habitudes de vie et 4 caractéristiques individuelles. La variable étudiée comporte quatre catégories de poids.
 
-Dans ce fichier, 54,6 % des répondants sont classés en surpoids ou en obésité. Ce chiffre décrit l’échantillon ; sa représentativité n’est pas établie, donc nous ne le présentons pas comme une prévalence dans la population turque.
+Dans le fichier, 54,6 % des répondants sont classés en surpoids ou en obésité. Cela décrit cet échantillon. La représentativité de l’enquête n’est pas établie, donc nous ne présentons pas ce chiffre comme une prévalence dans la population turque.
 
-Nous avons construit le site comme un parcours : observer les liens, prendre les autres caractéristiques en compte, regrouper les profils, puis conclure. »
+Notre parcours est simple : observer les répartitions, tester l’indépendance, puis explorer les profils avec l’AFDM. »
 
-**À montrer :** accueil, cible, problématique, répartition. Ne pas lire toutes les cartes.
+**Montrer :** problématique, cible et répartition de l’accueil.
 
-### 2. Observer — environ 1 minute 30
+### 2. Observer
 
-« Nous commençons par un graphique simple. Chaque barre représente 100 % des personnes ayant donné une réponse, et son effectif est affiché. Cela permet de comparer les répartitions sans confondre proportion et nombre de personnes.
+« Nous commençons par les proportions. Chaque barre représente 100 % des personnes ayant donné une réponse, et son effectif est affiché. Cela permet de comparer les répartitions sans confondre proportion et nombre de personnes.
 
-La consommation de légumes est un exemple marquant. La part de surpoids ou d’obésité est de 86,8 % chez les personnes répondant “rarement”, contre 20,3 % chez celles répondant “toujours”. Ces groupes comptent respectivement 400 et 502 personnes.
+Pour la consommation de légumes, la part observée de surpoids ou d’obésité est de 86,8 % chez les personnes répondant “rarement”, contre 20,3 % chez celles répondant “toujours”. Ces groupes comptent respectivement 400 et 502 personnes.
 
-Parmi les neuf habitudes ordonnées ou binaires, les légumes présentent la plus forte corrélation de Spearman en valeur absolue, avec un coefficient d’environ −0,55. Le moyen de transport est traité séparément : voiture, vélo et marche n’ont pas d’ordre naturel permettant cette corrélation.
+Il s’agit d’un écart descriptif. Ce graphique ne démontre pas que la consommation de légumes provoque une modification du poids. D’autres caractéristiques peuvent intervenir, et l’enquête ne renseigne pas sur la chronologie.
 
-Nous passons ensuite à l’AFDM pour lire plusieurs caractéristiques ensemble. Elle convient à nos données mixtes : deux variables quantitatives, l’âge et la taille, et douze variables qualitatives.
+Le site permet de changer la caractéristique étudiée et de retrouver les quatre catégories dans chaque réponse. L’âge et la taille sont regroupés uniquement pour ces graphiques descriptifs ; ils restent quantitatifs dans l’AFDM. »
 
-Sur la carte, chaque point représente une personne. Les icônes indiquent les modalités de la caractéristique sélectionnée. Les couleurs et les formes distinguent les catégories de poids. La catégorie de poids est supplémentaire : elle ne construit pas les axes.
+**Montrer :** barres des légumes, puis une autre variable. Ne pas dire que les légumes sont « la variable la plus importante » : nous n’avons pas établi ce classement.
 
-Les deux axes représentent seulement 19,5 % de l’inertie. La carte donne donc une vue partielle des profils. Une proximité sur ce plan ne doit pas être interprétée comme une prédiction individuelle. »
+### 3. Tester
 
-**À montrer :** graphique des légumes ; carte, sélection “Légumes”, mise en avant de “Toujours”. Garder les ellipses désactivées pendant la première explication.
+« Pour étudier l’association entre une caractéristique qualitative et la catégorie de poids, nous utilisons un tableau de contingence et le test du χ² d’indépendance.
 
-### 3. Ajuster — environ 1 minute 45
+L’hypothèse nulle est l’indépendance des deux variables. Le test compare les effectifs observés aux effectifs attendus sous cette hypothèse. Pour une cellule, l’effectif attendu est le produit du total de sa ligne par le total de sa colonne, divisé par l’effectif total.
 
-« Une association brute ne tient pas compte des autres caractéristiques. Nous utilisons donc une régression logistique multinomiale ajustée sur les 14 caractéristiques.
+Il faut vérifier les conditions à partir des effectifs attendus. Nous retenons la règle suivante : aucun attendu inférieur à 1, et au moins 80 % des cellules avec un attendu supérieur ou égal à 5. Dans les douze tableaux de variables qualitatives du fichier, ces conditions sont satisfaites. Si elles ne l’étaient pas, le programme utiliserait Fisher.
 
-Pour chaque variable, nous comparons le modèle complet au modèle qui l’omet, puis nous corrigeons les 14 p-values par la méthode de Holm. Les légumes et le nombre de repas restent associés aux catégories de poids après cet ajustement. Une p-value faible indique une évidence statistique dans ce modèle ; elle ne mesure ni une taille d’effet ni une causalité.
+Pour les légumes, le χ² vaut environ 554,67 avec 6 degrés de liberté et une p-value inférieure à 0,001. Nous rejetons l’hypothèse d’indépendance au seuil de 5 % : une association est détectée dans ce tableau.
 
-Le tabac illustre pourquoi les hypothèses du modèle comptent. Le modèle ordinal ne détecte pas son association ajustée, mais son hypothèse de cotes proportionnelles est rejetée. Le modèle multinomial, qui n’impose pas cette hypothèse, détecte une association. Nous ne concluons donc pas que le lien disparaît après ajustement. Les odds ratios de l’ordinal sont conservés uniquement dans une annexe exploratoire.
+Le résumé “surpoids ou obésité” regroupait deux catégories pour décrire l’écart. Le test utilise bien les quatre catégories d’origine, sur l’ensemble du tableau.
 
-Le simulateur permet ensuite de comparer des profils fictifs. Les quatorze caractéristiques sont réglables. Quand je modifie une réponse, le modèle recalcule une distribution estimée des catégories. Cela montre le fonctionnement du modèle ; cela ne démontre pas l’effet réel d’un changement d’habitude.
+La p-value ne donne ni la force du lien ni la probabilité que l’hypothèse nulle soit vraie. Les douze comparaisons sont exploratoires, avec des p-values brutes : le seuil de 5 % s’applique à chaque test, sans garantie globale sur l’ensemble. Enfin, ce test ne tient pas compte des autres caractéristiques et ne démontre pas une causalité. »
 
-Nous avons reproduit la validation croisée à dix plis : le modèle est réajusté sur neuf plis et évalué sur le dernier. Son exactitude moyenne est de 74,7 %, contre une référence descriptive de 40,9 % en prédisant toujours la catégorie majoritaire “Normal”.
+**Montrer :** variable “Légumes”, résultat, conditions, puis cocher “Effectifs attendus” pour expliquer une cellule.
 
-Les catégories étant déséquilibrées, nous regardons aussi l’exactitude équilibrée : 68,3 %. Le rappel de l’insuffisance pondérale est seulement de 52,1 %, ce qui montre les limites du score global. La calibration des probabilités et la validation externe restent à étudier. »
+### 4. Explorer l’AFDM
 
-**À montrer :** messages ajustés ; une modification du simulateur ; tuiles de validation. Ouvrir la matrice seulement si le jury souhaite approfondir.
+« Les tableaux et les tests examinent les variables deux à deux. Pour explorer les caractéristiques conjointement, nous utilisons l’analyse factorielle des données mixtes, ou AFDM.
 
-### 4. Regrouper — environ 1 minute
+Elle est adaptée ici parce que nous combinons deux variables quantitatives, l’âge et la taille, avec douze variables qualitatives. Les quatorze caractéristiques construisent les axes. La catégorie de poids est supplémentaire : elle est projetée pour aider à lire la carte, sans participer à sa construction.
 
-« Nous cherchons enfin des profils de caractéristiques et d’habitudes proches. Une classification hiérarchique de Ward, suivie d’une consolidation HCPC, utilise les cinq premiers axes de la même AFDM. Ces axes représentent 35,3 % de l’inertie.
+Un point représente une personne. Les icônes indiquent les modalités de la caractéristique sélectionnée, et les couleurs et formes distinguent les catégories de poids. Nous pouvons mettre en avant les personnes ayant donné une réponse et consulter leur répartition observée.
 
-HCPC choisit ici huit groupes. La catégorie de poids ne participe pas à leur construction. Nous comparons ensuite sa répartition entre groupes et nous les ordonnons pour faciliter la lecture.
+Les deux premiers axes représentent 19,5 % de l’inertie. Cette carte est donc une projection partielle : des points proches sur le plan ne sont pas nécessairement proches sur toutes les dimensions. Les modalités donnent des repères pour lire les profils, pas des frontières qui permettraient de classer une nouvelle personne.
 
-La part observée de surpoids ou d’obésité va de 4,2 % à 96,0 %. Les portraits décrivent trois modalités surreprésentées dans chaque groupe ; ils ne décrivent pas nécessairement tous les membres.
+Nous pouvons ainsi explorer comment les habitudes et les caractéristiques individuelles s’organisent ensemble, en gardant cette limite de projection visible. »
 
-Cette partition reste exploratoire. Nous n’avons pas évalué sa stabilité ni sa sensibilité au nombre d’axes ou de groupes. Nous ne présentons donc pas ces huit groupes comme une typologie universelle. »
+**Montrer :** sélectionner “Légumes”, mettre “Toujours” en avant, puis afficher l’activité physique. Garder les ellipses désactivées pour la première lecture.
 
-**À montrer :** barres par groupe et deux portraits contrastés. Bien distinguer les huit groupes des quatre catégories de poids.
+### 5. Conclure
 
-### 5. Conclure — environ 45 secondes
+« Pour répondre à notre problématique, les répartitions des catégories de poids diffèrent selon certaines habitudes, comme la consommation de légumes. Le χ² détecte une association dans ce tableau, et l’AFDM permet d’explorer les caractéristiques dans leur ensemble.
 
-« Pour répondre à notre problématique, les habitudes alimentaires présentent des associations brutes marquées, également détectées dans le modèle ajusté. Les caractéristiques forment des groupes aux répartitions de poids contrastées.
+Notre site apporte trois réflexes : regarder les effectifs derrière les proportions, distinguer description et test statistique, et tenir compte des limites d’une projection.
 
-Pour notre public, le site apporte trois réflexes : regarder les effectifs, distinguer les associations brutes des associations ajustées, et questionner le sens du lien.
+Nous restons prudents : l’enquête est en ligne, sa représentativité n’est pas établie et les réponses sont recueillies à un seul moment. Nous ne pouvons pas établir de causalité. Le fichier ne contient ni poids ni IMC, donc nous ne pouvons pas recalculer les catégories fournies.
 
-Notre enquête est réalisée à un seul moment. Elle ne permet pas de déterminer si une habitude précède ou suit une prise de poids. Le fichier ne contient ni poids ni IMC, donc nous ne pouvons pas recalculer les catégories. Enfin, les modèles et les groupes doivent encore être validés sur d’autres données.
-
-Notre contribution est donc une lecture interactive et argumentée de cet échantillon. Une visualisation utile rend les liens visibles et leurs limites compréhensibles. »
+Notre contribution est une lecture interactive et argumentée de cet échantillon. Une visualisation utile rend les liens visibles et leurs limites compréhensibles. »
 
 ## Les chiffres à connaître
 
-| Élément | Résultat et portée |
+| Élément | Résultat |
 |---|---|
-| Échantillon | 1 610 personnes, 18–54 ans, enquête en ligne en Turquie |
+| Effectif | 1 610 personnes, 18–54 ans |
 | Catégories | Insuffisance pondérale 73 ; Normal 658 ; Surpoids 592 ; Obésité 287 |
 | Surpoids ou obésité | 879 / 1 610 = 54,6 % |
-| Légumes | ρ de Spearman ≈ −0,55 ; plus forte valeur absolue parmi 9 habitudes ordonnées/binaires |
-| Légumes, parts observées | Rarement : 86,8 %, n = 400 ; Toujours : 20,3 %, n = 502 |
-| Plan AFDM | 19,5 % de l’inertie sur les 2 axes affichés |
-| Classification | 8 groupes sur 5 axes, 35,3 % de l’inertie ; parts de 4,2 % à 96,0 % |
-| Multinomial | Exactitude moyenne CV : 74,7 % ; exactitude équilibrée : 68,3 % |
-| Catégorie minoritaire | 73 personnes ; rappel hors pli : 52,1 % |
-| Référence descriptive | Toujours “Normal” : 40,9 % de l’échantillon |
-| Ordinal | Hypothèse des cotes proportionnelles rejetée pour 12 variables sur 12 testées au seuil de 5 %, tests non corrigés |
+| Légumes : Rarement | Surpoids ou obésité 86,8 %, n = 400 |
+| Légumes : Toujours | Surpoids ou obésité 20,3 %, n = 502 |
+| χ² légumes × catégorie | 554,67 ; ddl = 6 ; p < 0,001 |
+| AFDM | 14 caractéristiques actives, catégorie de poids supplémentaire |
+| Plan affiché | 19,5 % de l’inertie |
 
 ## Questions possibles du jury
 
-**Pourquoi l’AFDM plutôt qu’une ACP ou une ACM ?**
+**Pourquoi une AFDM ?** Deux variables sont quantitatives et douze qualitatives. L’AFDM permet de les combiner. Une ACP convient à des variables quantitatives ; une ACM à des variables qualitatives.
 
-L’ACP est adaptée aux variables quantitatives et l’ACM aux qualitatives. L’AFDM combine ici les deux types, en tenant compte de leurs codages. L’âge et la taille ne sont pas discrétisés pour construire les axes.
+**Pourquoi le χ² ?** Nous croisons deux variables qualitatives dans un tableau d’effectifs. Le test évalue l’hypothèse d’indépendance.
 
-**Que signifie la proximité des points ?**
+**Pourquoi pas Student ?** Student compare des moyennes d’une variable quantitative entre deux groupes. Il conviendrait à une question dédiée de comparaison de moyennes, mais pas directement à celle de la répartition des quatre catégories de poids selon les réponses qualitatives.
 
-Elle traduit une proximité de caractéristiques dans la projection affichée. Avec 19,5 % de l’inertie, la projection ne conserve pas toutes les distances ; une superposition ne démontre pas des profils identiques.
+**Quand utiliser Fisher ?** Quand les conditions retenues pour l’approximation du χ² sur les effectifs attendus ne sont pas satisfaites. Ici, tous les tableaux complets satisfont ces conditions ; Fisher est une possibilité de repli, pas un résultat présenté comme utilisé.
 
-**Les ellipses contiennent-elles exactement 80 % des personnes ?**
+**Une cellule observée nulle invalide-t-elle le χ² ?** Pas automatiquement. Le contrôle porte sur les effectifs attendus sous H₀, pas sur les seuls effectifs observés.
 
-Non. Elles sont calculées à partir de la covariance de chaque catégorie et d’un quantile du khi-deux à deux degrés de liberté. Le repère à 80 % repose sur une approximation normale ; ce n’est pas une couverture empirique garantie ni un intervalle de confiance. La sélection d’une réponse ne les recalcule pas.
+**Le transport a une cellule attendue inférieure à 5 : est-ce acceptable ?** Le minimum est environ 4,26, mais aucune cellule n’est inférieure à 1 et 95 % des cellules sont au moins égales à 5. La règle retenue est donc satisfaite. Si le cours impose la règle plus stricte “tous les attendus ≥ 5”, il faut adapter ce choix à cette consigne.
 
-**Pourquoi ne pas utiliser les odds ratios ordinaux comme résultats principaux ?**
+**Comment calcule-t-on les degrés de liberté ?** (Nombre de lignes − 1) × (nombre de colonnes − 1). Pour les légumes : (3 − 1) × (4 − 1) = 6.
 
-L’hypothèse d’un effet commun entre seuils est rejetée. Le coefficient ajusté n’est pas une moyenne garantie des effets par seuil, et les intervalles restent conditionnels à ce modèle. Les tests principaux utilisent donc le multinomial.
+**Une p-value très faible signifie-t-elle un lien très fort ?** Non. Elle indique une incompatibilité avec H₀ selon le test. Elle dépend aussi de l’effectif et ne mesure pas une taille d’effet.
 
-**Comment sont calculées les associations ajustées ?**
+**Si H₀ n’est pas rejetée, l’indépendance est-elle démontrée ?** Non. Le test n’a pas mis en évidence une association au seuil retenu ; cela n’est pas une preuve d’indépendance.
 
-Rapport de vraisemblance entre le multinomial complet et un modèle sans la variable étudiée, sur les mêmes 1 610 observations. La différence des nombres de paramètres donne les degrés de liberté. Correction de Holm sur les 14 tests. Ces tests sont globaux : ils ne donnent pas un effet commun ou un sens unique à une variable.
+**La proximité sur la carte suffit-elle à interpréter un profil ?** La carte ne conserve qu’une partie de l’inertie. Les distances sur le plan doivent être lues comme une projection, en regardant les axes et leurs pourcentages.
 
-**Pourquoi une corrélation faible peut-elle coexister avec un test ajusté significatif ?**
+**Les ellipses contiennent-elles exactement 80 % des personnes ?** Non. Ce sont des repères de dispersion fondés sur une approximation normale et sur la covariance de chaque catégorie, pas une couverture empirique garantie ni un intervalle de confiance. Elles restent calculées sur la catégorie entière lorsqu’une réponse est sélectionnée.
 
-Spearman teste une association monotone brute avec les catégories ordonnées. Le test multinomial évalue globalement une variable, conditionnellement aux autres, sans imposer cette structure monotone. Les hypothèses testées diffèrent. Il ne faut pas attribuer automatiquement toute différence au seul ajustement.
-
-**L’activité physique serait-elle associée à une prise de poids ?**
-
-La corrélation brute positive décrit cet échantillon. Elle ne démontre aucun effet de l’activité physique sur une prise de poids. L’adaptation des habitudes après une prise de poids est une hypothèse possible ; la temporalité ne peut pas être vérifiée ici.
-
-**Le simulateur peut-il diagnostiquer une personne ou prédire son risque futur ?**
-
-Il estime la distribution des catégories pour un profil fictif selon le modèle ajusté sur l’enquête. Les données ne décrivent pas une évolution dans le temps. Les probabilités ne sont pas validées pour un usage individuel et leur calibration n’a pas été évaluée.
-
-**Que signifie l’exactitude équilibrée ?**
-
-C’est la moyenne des quatre rappels, donnant le même poids à chaque catégorie. Le rappel est la part des observations d’une catégorie correctement reconnues. Cela complète l’exactitude globale dans un jeu de données déséquilibré.
-
-**Comment avez-vous validé le modèle ?**
-
-Nous avons reproduit dix plis aléatoires de tailles proches, avec la graine 2024. Chaque observation est prédite par un modèle qui n’a pas utilisé cette observation pour l’ajustement. Le protocole actuel n’est pas stratifié et n’évalue pas la validité externe. L’exactitude est la moyenne des scores des plis ; les rappels et précisions sont calculés sur toutes les prédictions hors pli.
-
-**Pourquoi huit groupes et cinq axes ?**
-
-Les cinq premiers axes sont le choix du projet existant. HCPC propose automatiquement le nombre de groupes, puis consolide la partition. Ce choix doit être soumis à une analyse de sensibilité ; nous n’avons pas démontré que huit groupes soient une structure stable ou optimale hors de cet échantillon.
-
-**Comment éviter de construire les groupes avec le résultat que l’on compare ?**
-
-La catégorie de poids est supplémentaire dans l’AFDM ; seuls les axes des 14 caractéristiques servent à HCPC. La catégorie sert ensuite à comparer et ordonner les groupes. Les écarts restent décrits dans les mêmes données, sans validation indépendante.
-
-**Quelles seraient les suites du projet ?**
-
-Vérifier la construction des catégories, évaluer la représentativité, tester la stabilité de la classification, stratifier ou répéter la validation, évaluer la calibration, puis utiliser des données externes et longitudinales.
+**Le projet permet-il de connaître le risque d’une personne ?** Les proportions sont observées dans l’échantillon et l’AFDM sert à explorer. Nous n’estimons pas un risque futur ni un diagnostic individuel.
 
 ## Préparation pratique
 
-1. Ouvrir l’application et actualiser la page avant la présentation.
-2. Activer « Mode présentation » ; il agrandit les textes secondaires et masque les annexes fermées.
-3. Suivre le menu : Cadrer → Observer → Ajuster → Regrouper → Conclure. Les boutons de fin de page suivent ce même ordre. Alt + flèche droite/gauche change d’étape hors des champs de saisie.
-4. Vérifier que les graphiques, les pictogrammes et les menus apparaissent sur l’ordinateur de présentation. Le serveur R doit rester lancé. Les polices et la bibliothèque d’icônes utilisent des ressources en ligne ; les données et les pictogrammes de la carte sont locaux.
-5. Répartir les cinq étapes entre les membres du groupe selon le temps accordé. Conserver une seule problématique et les mêmes trois messages clés.
-6. Répéter en disant les transitions à voix haute. Ne pas parcourir tous les contrôles : une comparaison, une sélection sur la carte et une modification du simulateur suffisent.
-
-## Vérifications réalisées et limites de la vérification
-
-Le contrôle `checks/verify-parcours.R` vérifie les effectifs, la synthèse, les tests ajustés, les performances par catégorie, les 14 contrôles du simulateur et les sorties Shiny. `checks/verify-carte-hode.R` vérifie toutes les modalités, les pictogrammes, les axes et les effectifs de la carte. La logique JavaScript du menu, des étapes actives, du mode présentation et du raccourci clavier a également été exercée.
-
-Le contrôle visuel dans un navigateur n’a pas pu être réalisé pendant cette intervention, l’outil d’accès au navigateur étant indisponible. Le rendu final reste à regarder sur l’ordinateur et le vidéoprojecteur utilisés pour l’examen.
+1. Ouvrir et actualiser le site avant l’oral ; garder le serveur R actif.
+2. Suivre les cinq étapes du menu. Le mode présentation agrandit les textes secondaires ; le quitter pour ouvrir une annexe fermée.
+3. Répéter une comparaison en barres, l’explication d’un attendu dans le χ² et deux sélections sur la carte. Cela suffit pour montrer l’interactivité.
+4. Répartir les étapes entre les membres du groupe, avec une seule problématique commune.
+5. Vérifier le rendu sur l’ordinateur et le vidéoprojecteur de présentation. Les contrôles automatiques vérifient les calculs et les sorties Shiny, mais le navigateur n’a pas pu être inspecté pendant cette intervention.

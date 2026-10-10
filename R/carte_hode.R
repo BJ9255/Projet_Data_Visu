@@ -1,5 +1,5 @@
 # Affichage interactif de Hodé, sur l’AFDM commune de Baptiste.
-# La classification et la carte partagent maintenant exactement les mêmes axes.
+# La carte projette les individus et modalités sur une même AFDM.
 carte_hode_donnees <- local({
   correspondance <- c(Sexe="Genre", Famille="Antecedents_Familiaux", Fast_food="Fast_Food",
     Legumes="Frequence_Legumes", Repas="Repas_Principaux", Entre_repas="Grignotage",

@@ -79,7 +79,7 @@
   $(document).on("shiny:connected", messages);
   $(document).on("shown.bs.tab", function (e) {
     var page = $(e.target).attr("data-value");
-    if (pages.indexOf(page) >= 0) marquer(page);
+    if (pages.indexOf(page) >= 0) { marquer(page); window.scrollTo({ top: 0, behavior: "auto" }); }
     setTimeout(function () { window.dispatchEvent(new Event("resize")); }, 60);
   });
 })();
