@@ -4,6 +4,8 @@ problematique <- "Quelles habitudes sont associées aux catégories de poids dan
 cible_projet <- "Étudiants et acteurs de prévention souhaitant comprendre les associations entre habitudes de vie et catégories de poids."
 but_projet <- "Rendre les associations observées compréhensibles, explorer les profils et expliciter les limites de leur interprétation."
 source_article <- "https://doi.org/10.33484/sinopfbd.1445215"
+pages <- c(contexte = "01 · Cadrer", explorer = "02 · Observer", compte = "03 · Ajuster",
+           profils = "04 · Regrouper", synthese = "05 · Conclure")
 
 effectifs_niveaux <- table(data$Niveau_Obesite)
 part_surpoids_obesite <- mean(data$Niveau_Obesite %in% c("Surpoids", "Obésité"))

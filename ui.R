@@ -16,8 +16,6 @@ rangee <- function(...) div(class = "row rangee", ...)
 choix_sim <- function(v) selectInput(paste0("sim_", v), libelles[[v]], levels(data[[v]]), selected = profil_type[[v]])
 suite <- function(page, texte) div(class = "suite-parcours",
   tags$button(class = "btn-ile", `data-aller` = page, span(texte), span(class = "bulle", ico("arrow-right"))))
-pages <- c(contexte = "01 · Cadrer", explorer = "02 · Observer", compte = "03 · Ajuster",
-           profils = "04 · Regrouper", synthese = "05 · Conclure")
 
 ui <- fluidPage(
   title = "Habitudes & catégories de poids · Une enquête, cinq étapes",

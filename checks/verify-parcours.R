@@ -1,8 +1,15 @@
 # Contrôle de bout en bout des données → résultats → sorties Shiny.
 # Rscript --vanilla -e 'source("checks/verify-parcours.R")'
 source("global.R")
-source("ui.R")
-source("server.R")
+# Shiny charge l'interface et le serveur dans des environnements distincts.
+# Ne pas les charger dans globalenv(), ce qui masquerait des dépendances manquantes.
+stopifnot(exists("pages", envir = globalenv(), inherits = FALSE))
+environnement_ui <- new.env(parent = globalenv())
+environnement_server <- new.env(parent = globalenv())
+sys.source("ui.R", envir = environnement_ui)
+sys.source("server.R", envir = environnement_server)
+ui <- environnement_ui$ui
+server <- environnement_server$server
 
 stopifnot(nrow(data) == 1610, ncol(data) == 15, !anyNA(data),
   identical(as.integer(effectifs_niveaux), c(73L, 658L, 592L, 287L)),
