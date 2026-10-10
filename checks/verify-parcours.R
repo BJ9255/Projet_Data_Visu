@@ -1,5 +1,9 @@
 # Données → proportions → χ² / Fisher → AFDM → sorties Shiny.
 source("global.R")
+# Shiny charge aussi automatiquement les scripts du dossier R/.
+for (fichier in list.files("R", pattern = "[.]R$", full.names = TRUE)) {
+  sys.source(fichier, envir = globalenv())
+}
 stopifnot(exists("pages", envir = globalenv(), inherits = FALSE))
 environnement_ui <- new.env(parent = globalenv())
 environnement_server <- new.env(parent = globalenv())
