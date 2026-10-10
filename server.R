@@ -33,14 +33,15 @@ texte_sur <- function(niveau) ifelse(niveau %in% c("Insuffisance pondérale", "O
 # Barres empilées à 100 % : niveau d'obésité dans chaque modalité d'un groupe
 barres_empilees <- function(groupe, titre, effectifs = TRUE) {
   d <- data.frame(modalite = groupe, Niveau = data$Niveau_Obesite) %>%
-    count(modalite, Niveau) %>% group_by(modalite) %>% mutate(total = sum(n), part = n / total) %>% ungroup()
+    count(modalite, Niveau) %>% group_by(modalite) %>%
+    mutate(total = sum(n), part = n / total, centre = 1 - cumsum(part) + part / 2) %>% ungroup()
   etiquettes <- with(distinct(d, modalite, total),
                      setNames(if (effectifs) paste0(modalite, "<br>n = ", total) else as.character(modalite), modalite))
   p <- ggplot(d, aes(x = modalite, y = part, fill = Niveau,
                      text = paste0(titre, " : ", modalite, "<br>", Niveau, " : ", n, " sur ", total, " (", pct(part), ")"))) +
     geom_col(width = 0.68, colour = encre, linewidth = 0.9) +
-    geom_text(aes(label = ifelse(part >= 0.08, pct(part), ""), colour = texte_sur(Niveau)),
-              position = position_stack(vjust = 0.5), size = 3.7, family = police) +
+    geom_text(aes(y = centre, label = ifelse(part >= 0.08, pct(part), ""), colour = texte_sur(Niveau)),
+              hjust = 0.5, vjust = 0.5, size = 3.7, family = police) +
     scale_colour_identity() +
     scale_fill_manual(values = couleurs_niveau, name = NULL) +
     scale_x_discrete(labels = etiquettes, limits = rev(levels(factor(groupe)))) +
