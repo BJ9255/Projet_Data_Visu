@@ -1,7 +1,8 @@
 # Depuis la racine du dépôt : Rscript --vanilla -e 'source("checks/verify-carte-hode.R")'
-source("R/carte_hode.R")
+source("global.R")
 stopifnot(nrow(carte_hode_donnees$donnees)==1610,
-  identical(carte_hode_donnees$resultat_afdm$call$sup.var,c(3L,15L)))
+  identical(carte_hode_donnees$individus_afdm$Dimension_1, unname(afdm$ind$coord[,1])),
+  identical(carte_hode_donnees$individus_afdm$Dimension_2, unname(afdm$ind$coord[,2])))
 shiny::testServer(carte_hode_server,args=list(id="hode"), {
   session$setInputs(variable="Activite",focus="",ellipses=TRUE)
   z <- jsonlite::fromJSON(output$carte,simplifyVector=FALSE)

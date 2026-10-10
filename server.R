@@ -139,34 +139,6 @@ server <- function(input, output, session) {
   })
   observeEvent(input$voir_transport, updateSelectInput(session, "explorer_var", selected = "Moyen_Transport"))
 
-  # Carte de l'ACM : personnes en fond, ellipses par niveau d'obésité, modalités de la variable choisie
-  output$afdm_carte <- renderPlotly({
-    ind <- data.frame(x = afdm$ind$coord[, 1], y = afdm$ind$coord[, 2], Niveau = data$Niveau_Obesite)
-    niv <- filter(afdm_modalites, var == "Niveau_Obesite") %>% mutate(Niveau = factor(modalite, levels = niveaux))
-    virgule <- function(x) format(x, decimal.mark = ",")
-    p <- ggplot(ind, aes(x = x, y = y)) +
-      geom_hline(yintercept = 0, colour = gris_doux) + geom_vline(xintercept = 0, colour = gris_doux) +
-      geom_point(aes(colour = Niveau), alpha = 0.22, size = 0.8) +
-      stat_ellipse(aes(fill = Niveau), level = 0.5, geom = "polygon", alpha = 0.07, colour = NA) +
-      stat_ellipse(aes(colour = Niveau), level = 0.5, linewidth = 1.2) +
-      geom_path(data = niv, colour = encre_2, linewidth = 0.7, linetype = "dashed") +
-      geom_point(data = niv, aes(fill = Niveau, text = paste("Point moyen :", modalite)), shape = 23, size = 5.5,
-                 colour = encre, stroke = 1.2) +
-      scale_colour_manual(values = couleurs_niveau, guide = "none") +
-      scale_fill_manual(values = couleurs_niveau, guide = "none")
-    p <- p + scale_x_continuous(labels = virgule) + scale_y_continuous(labels = virgule) +
-      labs(x = nom_axe(1), y = nom_axe(2)) +
-      theme_app
-    # Même échelle sur les deux axes : les distances de la carte sont fidèles
-    interactif(p, legende = "aucune") %>% layout(yaxis = list(scaleanchor = "x", scaleratio = 1))
-  })
-
-  output$afdm_message <- renderUI({
-    a_retenir(HTML(paste0("Les quatre niveaux d'obésité s'alignent dans l'ordre le long de l'axe 1, construit par l'âge et l'alimentation,
-      alors qu'ils n'ont pas servi à le construire. L'âge est la variable la plus liée à cet axe (corrélation ",
-      fmt(afdm$quanti.var$coord["Age", 1]), ").")))
-  })
-
   # Clic sur une barre du classement : on explore cette variable
   observeEvent(event_data("plotly_click", source = "classement"), {
     v <- event_data("plotly_click", source = "classement")$customdata

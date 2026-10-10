@@ -11,17 +11,14 @@ Base : commit `58a0d0c` du dépôt commun. La branche d’intégration descend d
 
 Le fichier Excel est identique dans les deux versions (vérifié par comparaison binaire).
 
-## Décisions nécessaires avant une application unique
+## Carte commune
 
-- Choisir l’interface de référence pour y porter les fonctionnalités de l’autre version.
-- Harmoniser les noms des variables et les modalités.
-- Choisir une seule AFDM : le sexe construit la carte de Baptiste, tandis qu’il est supplémentaire dans l’observatoire. Leurs coordonnées ne doivent pas être mélangées.
-- Conserver la distinction entre proportions observées, sorties de régression et risque futur ; l’assistant actuel compare uniquement des observations.
+La carte interactive remplace l’ancien affichage de Baptiste dans « Habitudes et obésité ». Elle reprend les pictogrammes, la sélection des modalités et les effectifs de Hodé, avec la police Nunito, les couleurs de niveaux et les cadres du projet commun.
+
+Les coordonnées proviennent désormais de l’AFDM de Baptiste : les 14 caractéristiques sont actives et la classe de poids est supplémentaire. La classification utilise cette même AFDM. La version autonome de Hodé reste inchangée dans `apps/observatoire`.
 
 ## Vérification
 
-Les dix contrôles R de l’observatoire passent depuis ce dépôt. Les tests de l’assistant et de navigation sont disponibles dans `apps/observatoire/checks`. La version racine contient maintenant le module `R/carte_hode.R`, affiché au début de la section « Habitudes et obésité ». Sa carte initiale, ses régressions et sa classification sont conservées. Le module de Hodé utilise sa propre AFDM : sexe et classe supplémentaires.
+`checks/verify-carte-hode.R` vérifie l’égalité numérique des coordonnées avec l’AFDM commune, toutes les modalités, les images, les axes fixes, les effectifs et les ellipses. La page ne contient plus l’ancien graphique.
 
-`checks/verify-carte-hode.R` couvre les images, les modalités, les axes et les effectifs. L’application racine a été lancée sur le port 3840. La vérification visuelle automatisée est indisponible à cause d’une erreur de démarrage de l’outil de navigateur.
-
-La carte est intégrée dans l’interface de Baptiste. Les autres fonctionnalités de l’observatoire restent disponibles dans `apps/observatoire`. La branche d’intégration est publiée sur GitHub ; la branche principale n’est pas modifiée.
+L’application commune est lancée sur le port 3840. Les changements sont portés uniquement par la branche `integration/hode-observatoire`.

@@ -132,31 +132,10 @@ ui <- fluidPage(
         entete("Étape 02", "Habitudes de vie et <em>niveau d'obésité</em>", "Quels profils se dessinent, et où se place le niveau d'obésité ?"),
         uiOutput("pari_resultat"),
         rangee(
-          carte("Carte interactive · contribution de Hodé", sous_titre = "Explorer une habitude, ses modalités et les personnes concernées",
-            carte_hode_ui("hode")),
-          carte("Carte des profils", sous_titre = "Analyse factorielle des données mixtes (AFDM) · deux personnes proches ont des caractéristiques semblables",
-            fluidRow(
-              column(9, div(class = "carte-afdm-boite", plotlyOutput("afdm_carte", height = "620px"),
-                            tags$button(class = "pilule rejouer-marche", ico("person-simple-walk"), " Rejouer la marche"))),
-              column(3,
-                div(class = "legende-carte",
-                  p(class = "legende-titre", "Niveau d'obésité"),
-                  lapply(niveaux, function(n) div(class = "legende-ligne",
-                    span(span(class = "pastille-couleur", style = paste0("background:", couleurs_niveau[[n]])), n))),
-                  p(class = "note", "Losange : point moyen du niveau. Ellipse : zone qui contient la moitié des personnes de ce niveau."),
-                  uiOutput("afdm_message")
-                )
-              )
-            ),
-            div(class = "variables-afdm",
-              div(span(class = "etiquette-afdm", "Variables actives"), span(class = "note", "les 14 variables : elles construisent la carte"),
-                  div(class = "puces", lapply(vars_actives, function(v) span(class = "puce puce-active", libelles[[v]])))),
-              div(span(class = "etiquette-afdm", "Variable illustrative"), span(class = "note", "projetée sur la carte, sans la construire"),
-                  div(class = "puces", span(class = "puce", libelles[["Niveau_Obesite"]])),
-                  p(class = "note", "Si les niveaux d'obésité se séparent sur la carte, c'est que les caractéristiques des personnes
-                    suffisent à les distinguer."))
-            )
-          )
+          carte("Carte des profils", sous_titre = "AFDM · explorez les modalités et mettez les personnes concernées en évidence",
+            carte_hode_ui("hode"),
+            div(class="variables-afdm",
+              p(class="note", "Les 14 caractéristiques construisent la carte. La classe de poids est illustrative : elle sert à lire les résultats. Cette même AFDM est utilisée pour former les groupes de profils.")))
         ),
         rangee(
           carte("Lien brut avec le niveau d'obésité", largeur = 5,

@@ -400,3 +400,6 @@ svg.balance { position: relative; z-index: 2; width: 170px; height: 74px; overfl
   .legende-carte { border-left: 0; padding-left: 0; margin-top: 16px; }
   .compagnon { right: 10px; bottom: 10px; }
 }
+
+/* Carte commune : interactions de Hodé, palette et cadres du projet. */
+.hode-map-controls{background:var(--papier-2);border:var(--trait);border-radius:14px;padding:16px 18px;margin-bottom:20px;box-shadow:3px 3px 0 var(--encre)}.hode-map-controls .form-group{margin-bottom:0}.hode-map-controls .checkbox{margin-top:28px}.hode-map .carte-afdm-boite{background:var(--papier);border:1px solid #1B1A1720;border-radius:12px;overflow:hidden}.hode-focus{margin:18px 0;padding:16px 20px;border:var(--trait);border-left:7px solid var(--jaune);border-radius:12px;background:var(--papier-2);box-shadow:3px 3px 0 var(--encre)}.hode-focus>strong{font-size:18px}.hode-focus p{margin:8px 0 0}.hode-map .note{margin-top:14px}@media(max-width:767px){.hode-map-controls .form-group{margin-bottom:14px}.hode-map-controls .checkbox{margin-top:10px}}
