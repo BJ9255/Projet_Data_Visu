@@ -282,3 +282,6 @@ profils_demo <- list(
   risque = modifyList(profil_type, list(Repas_Principaux = "Plus de 3", Frequence_Legumes = "Rarement", Fast_Food = "Oui",
                                         Grignotage = "Toujours", Temps_Ecrans = "Plus de 5 h"))
 )
+
+# Contribution de Hodé : carte autonome dans un module.
+source("R/carte_hode.R", local=TRUE)

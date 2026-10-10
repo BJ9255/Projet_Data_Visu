@@ -23,3 +23,9 @@ shiny::runApp("apps/observatoire")
 ```
 
 [Points à décider pour réunir les fonctionnalités](INTEGRATION.md).
+
+### Carte de Hodé dans l’application commune
+
+Lancez l’application racine puis ouvrez « Habitudes et obésité ». La carte de Hodé apparaît en premier, avec ses icônes, le choix de la caractéristique, la mise en évidence d’une réponse et les effectifs correspondants. Elle est indépendante de la carte utilisée pour la classification de Baptiste.
+
+Validation : `Rscript --vanilla -e 'source("checks/verify-carte-hode.R")'`.

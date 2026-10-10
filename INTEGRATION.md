@@ -20,6 +20,8 @@ Le fichier Excel est identique dans les deux versions (vérifié par comparaison
 
 ## Vérification
 
-Les dix contrôles R de l’observatoire passent depuis ce dépôt. Les tests de l’assistant et de navigation sont disponibles dans `apps/observatoire/checks`. La version racine n’a pas été modifiée ni exécutée lors de cette première étape.
+Les dix contrôles R de l’observatoire passent depuis ce dépôt. Les tests de l’assistant et de navigation sont disponibles dans `apps/observatoire/checks`. La version racine contient maintenant le module `R/carte_hode.R`, affiché au début de la section « Habitudes et obésité ». Sa carte initiale, ses régressions et sa classification sont conservées. Le module de Hodé utilise sa propre AFDM : sexe et classe supplémentaires.
 
-La réunion des fonctionnalités dans une interface unique reste à faire après le choix de la base. Aucun changement n’a été poussé sur GitHub à cette étape.
+`checks/verify-carte-hode.R` couvre les images, les modalités, les axes et les effectifs. L’application racine a été lancée sur le port 3840. La vérification visuelle automatisée est indisponible à cause d’une erreur de démarrage de l’outil de navigateur.
+
+La carte est intégrée dans l’interface de Baptiste. Les autres fonctionnalités de l’observatoire restent disponibles dans `apps/observatoire`. La branche d’intégration est publiée sur GitHub ; la branche principale n’est pas modifiée.

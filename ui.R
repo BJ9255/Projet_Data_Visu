@@ -132,6 +132,8 @@ ui <- fluidPage(
         entete("Étape 02", "Habitudes de vie et <em>niveau d'obésité</em>", "Quels profils se dessinent, et où se place le niveau d'obésité ?"),
         uiOutput("pari_resultat"),
         rangee(
+          carte("Carte interactive · contribution de Hodé", sous_titre = "Explorer une habitude, ses modalités et les personnes concernées",
+            carte_hode_ui("hode")),
           carte("Carte des profils", sous_titre = "Analyse factorielle des données mixtes (AFDM) · deux personnes proches ont des caractéristiques semblables",
             fluidRow(
               column(9, div(class = "carte-afdm-boite", plotlyOutput("afdm_carte", height = "620px"),

@@ -52,6 +52,7 @@ barres_empilees <- function(groupe, titre, effectifs = TRUE) {
 }
 
 server <- function(input, output, session) {
+  carte_hode_server("hode")
 
   # ============================================================
   # 1. CONTEXTE
