@@ -430,7 +430,10 @@ body { background-image: radial-gradient(rgba(27,26,23,.035) 1px, transparent 1p
 .compteur { padding: 10px 12px; font-size: 12px; border-width: 1.5px; box-shadow: 2px 2px 0 var(--encre); }
 .compteur:nth-child(n) { transform: none; }
 .compteur-valeur { font: 800 29px/1.2 "Nunito", sans-serif; letter-spacing: -.04em; }
-.hero-donnees { background: var(--encre); color: var(--papier); border-radius: 24px; padding: 34px; box-shadow: 7px 7px 0 #D6CFBF; }
+.hero-donnees { position: relative; isolation: isolate; overflow: hidden; background: var(--encre); color: var(--papier); border-radius: 24px; padding: 34px; box-shadow: 7px 7px 0 #D6CFBF; }
+.hero-donnees .turquie-filigrane { position: absolute; z-index: -1; pointer-events: none; width: 92%; height: auto; top: 30px; right: -8%; opacity: .22; transform: rotate(-8deg); }
+.repere-turquie { display: inline-flex; align-items: center; gap: 10px; margin-top: 28px; padding: 8px 13px; border: 1px solid #B8443D40; border-radius: 100px; background: #B8443D0A; color: #953B35; font-size: 13px; font-weight: 800; }
+.repere-turquie img { display: block; width: 25px; height: 17px; border-radius: 3px; }
 .resultat-kicker { display: block; text-transform: uppercase; letter-spacing: .12em; font-size: 11px; font-weight: 800; }
 .hero-donnees .resultat-kicker { color: #DDD5C5; }
 .hero-stat { color: var(--jaune); font: 800 clamp(48px,6.2vw,84px)/1.1 "Nunito",sans-serif; letter-spacing: -.065em; margin-top: 16px; }
