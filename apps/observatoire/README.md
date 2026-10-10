@@ -6,7 +6,7 @@ Une exploration destinée aux étudiants découvrant l’analyse de données.
 
 ## Lancer le site
 
-Depuis le dossier `obesity-shiny`, ouvrir `app.R` dans RStudio et cliquer sur **Run App**, ou lancer :
+Depuis le dossier `apps/observatoire`, ouvrir `app.R` dans RStudio et cliquer sur **Run App**, ou lancer :
 
 ```r
 shiny::runApp()
@@ -15,7 +15,7 @@ shiny::runApp()
 Depuis la racine du projet :
 
 ```r
-shiny::runApp("obesity-shiny")
+shiny::runApp("apps/observatoire")
 ```
 
 Bibliothèques nécessaires :
@@ -37,7 +37,7 @@ L’AFDM porte toujours sur le jeu complet. Le sexe et la classe de poids sont s
 ## Présentation et vérification
 
 - `presentation-lundi.md` : discours de cinq minutes et parcours de démonstration.
-- `checks/verify.R` : dix contrôles, dont le rendu de toutes les modalités et des graphiques. Depuis la racine : `Rscript --vanilla obesity-shiny/checks/verify.R`.
+- `checks/verify.R` : dix contrôles, dont le rendu de toutes les modalités et des graphiques. Depuis la racine : `Rscript --vanilla apps/observatoire/checks/verify.R`.
 
 ## Assistant de profil et connexion OpenAI
 
@@ -45,7 +45,7 @@ L’onglet **Explorer mon profil** comprend une description libre, une confirmat
 
 ### Activer OpenAI
 
-1. Copier `.Renviron.example` en `.Renviron` **dans `obesity-shiny`**.
+1. Copier `.Renviron.example` en `.Renviron` **dans `apps/observatoire`**.
 2. Renseigner `OPENAI_API_KEY` dans ce fichier local, sans partager la clé dans une conversation ou la publier. Le fichier est ignoré par Git.
 3. Conserver `OBESITY_LLM_PROVIDER=openai` et `OBESITY_LLM_MODEL=gpt-5.4-mini`, puis relancer l’application.
 4. L’interface affiche le fournisseur actif et demande l’accord de l’utilisateur avant d’envoyer sa description ou sa question à OpenAI. La clé reste côté serveur.
@@ -62,7 +62,7 @@ Les catégories confirmées doivent toutes correspondre exactement. L’âge fac
 
 Une modification des critères invalide le résultat précédent. Les questions demandant un risque médical reçoivent une explication des limites. Les chiffres restent calculés par R, et les explications du modèle ne sont pas autorisées à ajouter leurs propres pourcentages. Ce prototype est un outil pédagogique : la validation des sorties et la confirmation humaine limitent les erreurs sans garantir qu’un LLM n’en fera jamais.
 
-Contrôles de l’assistant : `Rscript --vanilla obesity-shiny/checks/verify-assistant.R` depuis la racine.
+Contrôles de l’assistant : `Rscript --vanilla apps/observatoire/checks/verify-assistant.R` depuis la racine.
 
 ### Parler et écouter
 
