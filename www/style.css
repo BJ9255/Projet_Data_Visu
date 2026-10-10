@@ -403,3 +403,143 @@ svg.balance { position: relative; z-index: 2; width: 170px; height: 74px; overfl
 
 /* Carte commune : interactions de Hodé, palette et cadres du projet. */
 .hode-map-controls{background:var(--papier-2);border:var(--trait);border-radius:14px;padding:16px 18px;margin-bottom:20px;box-shadow:3px 3px 0 var(--encre)}.hode-map-controls .form-group{margin-bottom:0}.hode-map-controls .checkbox{margin-top:28px}.hode-map .carte-afdm-boite{background:var(--papier);border:1px solid #1B1A1720;border-radius:12px;overflow:hidden}.hode-focus{margin:18px 0;padding:16px 20px;border:var(--trait);border-left:7px solid var(--jaune);border-radius:12px;background:var(--papier-2);box-shadow:3px 3px 0 var(--encre)}.hode-focus>strong{font-size:18px}.hode-focus p{margin:8px 0 0}.hode-map .note{margin-top:14px}@media(max-width:767px){.hode-map-controls .form-group{margin-bottom:14px}.hode-map-controls .checkbox{margin-top:10px}}
+
+/* Parcours M2 : une lecture guidée, des résultats au premier plan. */
+body { background-image: radial-gradient(rgba(27,26,23,.035) 1px, transparent 1px); font-size: 16px; }
+.ile-nav { width: 100%; max-width: 100%; justify-content: space-between; gap: 18px; padding: 12px 18px; border-width: 2px; box-shadow: 3px 3px 0 var(--encre); animation: none; }
+.marque { font: 800 19px "Nunito", sans-serif; letter-spacing: -.03em; }
+.marque-point { background: var(--bleu); }
+.navigation-choix { flex: 1; max-width: 360px; }
+.navigation-select { width: 100%; background: var(--papier); color: var(--encre); border: 2px solid var(--encre); border-radius: 10px; padding: 10px 14px; font: 800 15px "Nunito", sans-serif; min-height: 44px; cursor: pointer; }
+.navigation-select:focus-visible, .etape-nav:focus-visible, summary:focus-visible { outline: 3px solid var(--bleu); outline-offset: 4px; }
+.progression-parcours { display: flex; gap: 10px; align-items: center; justify-content: center; margin: 24px 0 0; }
+.etape-nav { display: inline-flex; align-items: center; gap: 8px; background: transparent; border: 0; border-bottom: 2px solid transparent; color: var(--encre-3); padding: 8px 14px; font: 700 14px "Nunito", sans-serif; cursor: pointer; }
+.etape-nav span { display: inline-grid; place-items: center; height: 26px; width: 26px; border: 1px solid #1B1A1740; border-radius: 50%; font-size: 11px; }
+.etape-nav.actif { color: var(--encre); border-bottom-color: var(--bleu); }
+.etape-nav.actif span { background: var(--bleu); color: white; border-color: var(--bleu); }
+.reveal { opacity: 1; transform: none; transition: none; }
+.animations-pretes .reveal:not(.vu) { opacity: 0; transform: translateY(12px); }
+.animations-pretes .reveal { transition: opacity .25s ease, transform .25s ease; transition-delay: 0s; }
+.hero-enquete { min-height: auto; grid-template-columns: 1.08fr .92fr; gap: 48px; padding: 52px 0 50px; }
+.hero-titre { font: 800 clamp(42px,5.2vw,70px)/1.04 "Nunito", sans-serif; letter-spacing: -.065em; text-shadow: none; margin-top: 22px; }
+.hero-titre em { color: var(--bleu); text-shadow: none; }
+.hero-chapeau { font-size: 20px; line-height: 1.55; max-width: 46ch; }
+.hero-perimetre { color: var(--encre-3); max-width: 50ch; }
+.hero-actions { gap: 18px; margin-top: 24px; }
+.compteurs { gap: 12px; margin-top: 30px; }
+.compteur { padding: 10px 12px; font-size: 12px; border-width: 1.5px; box-shadow: 2px 2px 0 var(--encre); }
+.compteur:nth-child(n) { transform: none; }
+.compteur-valeur { font: 800 29px/1.2 "Nunito", sans-serif; letter-spacing: -.04em; }
+.hero-donnees { background: var(--encre); color: var(--papier); border-radius: 24px; padding: 34px; box-shadow: 7px 7px 0 #D6CFBF; }
+.resultat-kicker { display: block; text-transform: uppercase; letter-spacing: .12em; font-size: 11px; font-weight: 800; }
+.hero-donnees .resultat-kicker { color: #DDD5C5; }
+.hero-stat { color: var(--jaune); font: 800 clamp(48px,6.2vw,84px)/1.1 "Nunito",sans-serif; letter-spacing: -.065em; margin-top: 16px; }
+.hero-donnees h2 { color: var(--papier); font-size: 22px; line-height: 1.35; margin: 14px 0 28px; }
+.distribution-hero { display: flex; height: 24px; border: 2px solid var(--papier); border-radius: 8px; overflow: hidden; }
+.distribution-hero > div + div { border-left: 2px solid var(--papier); }
+.repartition-hero { display: grid; gap: 12px; margin-top: 22px; }
+.repartition-hero > div { display: grid; grid-template-columns: 16px 1fr auto; align-items: center; gap: 0 10px; font-size: 14px; }
+.repartition-hero .pastille { margin: 0; border-color: #FBF6EC99; width: 13px; height: 13px; }
+.repartition-hero .note { grid-column: 2 / 4; margin-top: 0; font-size: 12px; }
+.hero-donnees .note { color: #D2CBBF; }
+.hero-donnees > .note { border-top: 1px solid #FBF6EC33; padding-top: 18px; margin-top: 22px; }
+.cadrage-projet { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; background: var(--papier-2); border-top: 2px solid var(--encre); border-bottom: 2px solid var(--encre); padding: 28px; margin-bottom: 38px; }
+.cadrage-projet h2 { font-size: 22px; font-weight: 800; letter-spacing: -.03em; }
+.cadrage-projet p { margin-bottom: 0; }
+.intro-resultats { margin: 0 0 26px; }
+.intro-resultats h2 { font-size: clamp(24px,3vw,34px); font-weight: 800; letter-spacing: -.045em; margin: 18px 0 12px; }
+.intro-resultats p { max-width: 85ch; }
+.resultats-grille { display: grid; grid-template-columns: repeat(3,1fr); gap: 22px; margin: 0 0 46px; }
+.resultat-cle { position: relative; padding: 24px; border: 2px solid var(--encre); border-radius: 16px; background: #EAF0F8; box-shadow: 3px 3px 0 var(--encre); }
+.resultat-cle:nth-child(2) { background: #FFF3CE; }
+.resultat-cle:nth-child(3) { background: #F0E9F4; }
+.resultat-num { display: block; font-size: 30px; letter-spacing: -.06em; font-weight: 800; margin-bottom: 12px; }
+.resultat-cle h3 { font: 800 20px/1.3 "Nunito",sans-serif; letter-spacing: -.025em; margin: 12px 0; }
+.resultat-cle p { font-size: 14.5px; line-height: 1.65; margin: 0; }
+.entete h1 { font: 800 clamp(32px,4vw,52px)/1.1 "Nunito",sans-serif; letter-spacing: -.05em; text-shadow: none; max-width: 24ch; }
+.entete h1 em { color: var(--bleu); text-shadow: none; }
+.question { font-size: 18px; max-width: 78ch; }
+.repere-etape { border-left: 4px solid var(--bleu); background: #EAF0F8; padding: 14px 18px; border-radius: 0 10px 10px 0; margin-bottom: 40px; }
+.noyau { border-width: 2px; box-shadow: 3px 3px 0 var(--encre); }
+.coque:hover .noyau { transform: none; box-shadow: 3px 3px 0 var(--encre); }
+.carte-tete h3 { transform: none; font: 800 17px/1.4 "Nunito",sans-serif; letter-spacing: -.02em; border-width: 2px; }
+.carte-corps { padding-top: 20px; }
+.btn-ile { font: 800 15px "Nunito",sans-serif; letter-spacing: 0; background: var(--bleu); border-width: 2px; box-shadow: 3px 3px 0 var(--encre); }
+.btn-ile:hover { transform: translateY(-2px); box-shadow: 3px 5px 0 var(--encre); }
+.btn-ile .bulle { height: 30px; width: 30px; }
+.btn-ile:hover .bulle { transform: none; }
+.lecture-carte { display: grid; grid-template-columns: repeat(3,1fr); gap: 18px; margin: 0 0 24px; }
+.lecture-carte > div { padding: 16px; border-radius: 12px; background: var(--papier-2); }
+.lecture-carte p { font-size: 14px; margin: 8px 0 0; }
+.details-methode { background: var(--blanc); border: 1.5px solid #1B1A1740; border-radius: 12px; padding: 16px 20px; margin: 20px 0 32px; }
+.details-methode summary { font-weight: 800; cursor: pointer; }
+.details-methode[open] summary { margin-bottom: 18px; }
+.details-methode .plotly { margin-top: 18px; }
+.hode-map .details-methode { margin-bottom: 0; }
+.table-associations { font-size: 13.5px; line-height: 1.5; }
+.table-associations caption { color: var(--encre-3); font-size: 12px; padding: 0 0 12px; }
+.table-associations th { font-weight: 700; }
+.table-associations thead th { background: var(--papier-2); border-bottom: 2px solid var(--encre); }
+.table-associations td { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.table-associations tbody th, .table-associations td { padding: 10px 8px; }
+.table-responsive { border: 0; }
+.message { border-width: 1.5px; box-shadow: none; }
+.message .num { font: 800 22px "Nunito",sans-serif; color: var(--bleu); }
+.message span { font-size: 14.5px; }
+.bulle-bd { align-items: center; }
+.bulle-bd .bulle-texte { margin-bottom: 0; border-width: 1.5px; border-radius: 12px; box-shadow: none; }
+.bulle-bd svg.mascotte { display: none; }
+.bulle-bd .bulle-texte::before, .bulle-bd .bulle-texte::after { display: none; }
+.a-retenir-titre { font: 800 12px "Nunito",sans-serif; text-transform: uppercase; letter-spacing: .06em; color: var(--bleu); }
+.sim-tete { margin: 0 0 16px; }
+.grand { font-family: "Nunito", sans-serif; font-weight: 800; letter-spacing: -.06em; }
+.portrait { display: flex; flex-direction: column; gap: 8px; border-width: 1.5px; box-shadow: none; }
+.portrait:hover { box-shadow: none; }
+.portrait-nom { font: 800 16px "Nunito", sans-serif; letter-spacing: 0; }
+.portrait-risque { color: var(--encre); font: 800 26px "Nunito", sans-serif; -webkit-text-stroke: 0; letter-spacing: -.04em; }
+.portrait .note { font-size: 12px; margin-top: 0; }
+.suite-parcours { display: flex; justify-content: flex-end; margin: 28px 0 12px; }
+.reponse-problematique { background: var(--encre); color: var(--papier); padding: 32px; border-radius: 18px; margin-bottom: 32px; }
+.reponse-problematique .resultat-kicker { color: var(--jaune); }
+.reponse-problematique h2 { color: var(--papier); font-weight: 800; font-size: clamp(24px,3vw,34px); line-height: 1.25; max-width: 36ch; }
+.reponse-problematique p { max-width: 95ch; margin-bottom: 0; }
+.limites-liste { padding-left: 20px; }
+.limites-liste li { margin-bottom: 12px; }
+.phrase-finale { border-top: 2px solid var(--encre); border-bottom: 2px solid var(--encre); padding: 24px 0; margin: 18px 0 30px; font-size: clamp(20px,3vw,30px); letter-spacing: -.035em; text-align: center; }
+.phrase-finale p { margin: 0; }
+.sources-fin { max-width: 80ch; }
+.presentation { font-size: 18px; }
+.presentation .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
+.presentation .note, .presentation .sous-titre, .presentation .message span, .presentation .resultat-cle p, .presentation .lecture-carte p { font-size: 16px; }
+.presentation .details-methode:not([open]) { display: none; }
+.presentation .progression-parcours { margin-top: 18px; }
+.presentation .hero-enquete { padding-top: 32px; }
+@media (max-width: 991px) {
+  .hero-enquete { grid-template-columns: 1fr; gap: 28px; }
+  .hero-donnees { max-width: 680px; width: 100%; }
+  .resultats-grille { grid-template-columns: 1fr; gap: 16px; }
+  .resultat-cle { display: grid; grid-template-columns: 50px 1fr; gap: 0 12px; }
+  .resultat-num { grid-row: 1 / 4; }
+  .resultat-cle h3, .resultat-cle p { grid-column: 2; }
+  .lecture-carte { grid-template-columns: 1fr; gap: 12px; }
+  .marque { display: none; }
+}
+@media (max-width: 600px) {
+  .ile-nav { padding: 8px; gap: 8px; top: 8px; }
+  .navigation-select { font-size: 13px; padding: 8px; }
+  #mode_presentation { max-width: 125px; font-size: 11px; padding: 8px; }
+  .progression-parcours { display: none; }
+  .hero-enquete { padding-top: 30px; }
+  .hero-donnees { padding: 24px; }
+  .hero-stat { font-size: 64px; }
+  .cadrage-projet { grid-template-columns: 1fr; padding: 22px; gap: 24px; }
+  .cadrage-projet h2 { margin-top: 10px; }
+  .carte-corps { padding: 16px 14px 20px; }
+  .carte-tete { padding: 0 14px; }
+  .entete { margin-bottom: 24px; }
+  .reponse-problematique { padding: 24px; }
+  .resultat-cle { padding: 20px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .animations-pretes .reveal { opacity: 1; transform: none; }
+}

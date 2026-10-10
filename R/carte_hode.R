@@ -57,11 +57,11 @@ carte_hode_ui <- function(id) {
     shiny::div(class="hode-map-controls", shiny::fluidRow(
       shiny::column(4, shiny::selectInput(ns("variable"), "Caractéristique à explorer", carte_hode_donnees$choix_modalites_afdm, selected="Activite")),
       shiny::column(4, shiny::uiOutput(ns("choix_focus"))),
-      shiny::column(4, shiny::checkboxInput(ns("ellipses"), "Afficher les ellipses à 80 %", TRUE))
+      shiny::column(4, shiny::checkboxInput(ns("ellipses"), "Ellipses de dispersion (repère 80 %)", FALSE))
     )),
     shiny::div(class="carte-afdm-boite", plotly::plotlyOutput(ns("carte"), height="620px")),
     shiny::uiOutput(ns("resume")),
-    shiny::p(class="note", "Icônes : modalités. Survolez les points pour lire les observations ; tracez un rectangle pour zoomer. Axes fixes et distances à la même échelle. Les 14 caractéristiques construisent les axes ; la classe de poids est supplémentaire. Cette carte sert aussi à la classification des profils. Les ellipses ne sont pas des frontières de classification.")
+    shiny::p(class="note", "Survolez les points ; tracez un rectangle pour zoomer ; double-cliquez pour réinitialiser la vue. Couleurs et formes distinguent les catégories. Les axes restent fixes lors des sélections, avec la même unité sur les deux dimensions. Les ellipses sont calculées sur les catégories entières, même lorsqu’une réponse est sélectionnée : repères de dispersion sous approximation normale, pas des intervalles de confiance ni des frontières de classification.")
   )
 }
 
@@ -94,12 +94,12 @@ carte_hode_server <- function(id) {
         fond <- idx[!actif[idx]]
         carte <- plotly::add_trace(carte, x = individus_afdm$Dimension_1[fond], y = individus_afdm$Dimension_2[fond],
           type = "scatter", mode = "markers", name = classe, legendgroup = classe, showlegend = FALSE,
-          text = profil[fond], hoverinfo = "text", marker = list(color = couleurs_classes[[classe]], size = 5, opacity = 0.10))
+          text = profil[fond], hoverinfo = "text", marker = list(color = couleurs_classes[[classe]], symbol = c("circle", "diamond", "square", "triangle-up")[match(classe, niveaux)], size = 5, opacity = 0.10))
       }
       points <- idx[actif[idx]]
       carte <- plotly::add_trace(carte, x = individus_afdm$Dimension_1[points], y = individus_afdm$Dimension_2[points],
         type = "scatter", mode = "markers", name = classe, legendgroup = classe,
-        text = profil[points], hoverinfo = "text", marker = list(color = couleurs_classes[[classe]], size = if (mise_en_avant) 7 else 5, opacity = if (mise_en_avant) 0.9 else 0.65))
+        text = profil[points], hoverinfo = "text", marker = list(color = couleurs_classes[[classe]], symbol = c("circle", "diamond", "square", "triangle-up")[match(classe, niveaux)], size = if (mise_en_avant) 7 else 5, opacity = if (mise_en_avant) 0.9 else 0.65))
       if (isTRUE(input$ellipses)) {
         coords <- as.matrix(individus_afdm[idx, c("Dimension_1", "Dimension_2")])
         decomposition <- eigen(cov(coords), symmetric = TRUE)

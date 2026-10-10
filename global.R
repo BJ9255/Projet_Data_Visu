@@ -55,13 +55,13 @@ data_classes <- data %>%
 # Variables, libellés et couleurs
 # ------------------------------------------------------------
 libelles <- c(
-  Genre = "Genre", Age = "Âge", Taille_cm = "Taille",
+  Genre = "Sexe déclaré", Age = "Âge", Taille_cm = "Taille",
   Antecedents_Familiaux = "Antécédents familiaux de surpoids", Fast_Food = "Fast-food",
   Frequence_Legumes = "Légumes", Repas_Principaux = "Repas principaux par jour",
   Grignotage = "Grignotage entre les repas", Fumeur = "Tabac", Consommation_Liquide = "Boisson par jour",
   Suivi_Calories = "Suivi des calories", Activite_Physique = "Activité physique",
   Temps_Ecrans = "Temps d'écran par jour", Moyen_Transport = "Moyen de transport",
-  Niveau_Obesite = "Niveau d'obésité"
+  Niveau_Obesite = "Catégorie de poids"
 )
 facteurs_fixes <- c("Age", "Taille_cm", "Genre", "Antecedents_Familiaux")
 habitudes_vie  <- c("Repas_Principaux", "Frequence_Legumes", "Fast_Food", "Grignotage", "Consommation_Liquide",
@@ -75,7 +75,7 @@ themes_questionnaire <- list(
        vars = c("Repas_Principaux", "Frequence_Legumes", "Fast_Food", "Grignotage", "Consommation_Liquide", "Suivi_Calories")),
   list(titre = "Activité et déplacements", icone = "person-simple-run", vars = c("Activite_Physique", "Moyen_Transport")),
   list(titre = "Mode de vie", icone = "device-mobile", vars = c("Temps_Ecrans", "Fumeur")),
-  list(titre = "Facteurs non modifiables", icone = "user", vars = c("Age", "Taille_cm", "Genre", "Antecedents_Familiaux"))
+  list(titre = "Caractéristiques individuelles", icone = "user", vars = c("Age", "Taille_cm", "Genre", "Antecedents_Familiaux"))
 )
 # Réponses possibles d'une question : modalités, ou plage de valeurs pour l'âge et la taille
 levels_ou_plage <- function(v) {
@@ -83,9 +83,8 @@ levels_ou_plage <- function(v) {
   if (is.factor(x)) levels(x) else paste("de", min(x), "à", max(x), if (v == "Age") "ans" else "cm")
 }
 
-# Palette contrôlée pour le daltonisme : bleu, vert, orange, rouge
+# Quatre teintes distinctes, constantes sur toutes les pages.
 niveaux <- levels(data$Niveau_Obesite)
-# (teintes éclaircies pour rester lisibles sur le fond sombre de l'application)
 couleurs_niveau <- setNames(c("#0072B2", "#E69F00", "#009E73", "#8B4B9E"), niveaux)
 couleur_accent  <- "#3D6FB6"
 palette_classes <- c("#2A78D6", "#EB6834", "#1BAF7A", "#EDA100", "#E87BA4", "#008300", "#4A3AA7", "#E34948")
@@ -108,10 +107,10 @@ bouton_ile <- function(id, texte, icone = "arrow-up-right") {
   actionButton(id, label = tagList(span(texte), span(class = "bulle", ico(icone))), class = "btn-ile")
 }
 tuile <- function(valeur, libelle) div(class = "tuile", div(class = "tuile-valeur", valeur), div(class = "tuile-libelle", libelle))
-# « À retenir » : bulle de BD prononcée par la mascotte, écrite lettre par lettre (effets.js)
+# Message de lecture immédiate, sans animation ni modification du graphique.
 a_retenir <- function(..., k = 0.35) {
-  div(class = "bulle-bd", silhouette_svg(k = k, hauteur = 96),
-      div(class = "bulle-texte", span(class = "a-retenir-titre", "À retenir !"), p(class = "machine", ...)))
+  div(class = "bulle-bd",
+      div(class = "bulle-texte", span(class = "a-retenir-titre", "À retenir"), p(...)))
 }
 
 # ------------------------------------------------------------
@@ -184,6 +183,8 @@ afdm_modalites <- bind_rows(lapply(c(setdiff(vars_actives, vars_quanti), "Niveau
   data.frame(var = v, modalite = levels(data[[v]]), x = m[noms, 1], y = m[noms, 2])
 }))
 # Classification ascendante hiérarchique (Ward) sur les 5 premiers axes de cette même AFDM : groupes de profils (étape 4)
+# La consolidation utilise des départs aléatoires : graine fixe pour la soutenance.
+set.seed(2024)
 cah <- HCPC(afdm, nb.clust = -1, graph = FALSE, consol = TRUE)
 
 # Variables qui construisent le plus chaque axe (r² ou rapport de corrélation), pour nommer les axes
@@ -274,14 +275,7 @@ probas_profil <- function(profil) {
   setNames(as.vector(p), niveaux)
 }
 
-# Profils prêts à l'emploi pour la démonstration
-profils_demo <- list(
-  type   = profil_type,
-  sain   = modifyList(profil_type, list(Repas_Principaux = "1 à 2", Frequence_Legumes = "Toujours", Fast_Food = "Non",
-                                        Grignotage = "Rarement", Temps_Ecrans = "0-2 h")),
-  risque = modifyList(profil_type, list(Repas_Principaux = "Plus de 3", Frequence_Legumes = "Rarement", Fast_Food = "Oui",
-                                        Grignotage = "Toujours", Temps_Ecrans = "Plus de 5 h"))
-)
-
 # Contribution de Hodé : carte autonome dans un module.
 source("R/carte_hode.R", local=TRUE)
+source("R/parcours.R", local=TRUE)
+source("R/validation.R", local=TRUE)

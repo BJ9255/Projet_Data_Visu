@@ -2,8 +2,7 @@
 # server.R (version courte) : graphiques et calculs réactifs
 # ============================================================
 
-# Couleurs des graphiques sur le fond sombre de l'application
-# Couleurs des graphiques, style BD : encre noire sur papier
+# Couleurs des graphiques : encre noire sur papier.
 encre <- "#1B1A17"; encre_2 <- "#3A3833"; encre_3 <- "#6E6A60"; gris_doux <- "#1B1A1733"; grille <- "#1B1A1714"
 fond_sombre <- "#1B1A17"
 police <- "Nunito"
@@ -71,39 +70,9 @@ server <- function(input, output, session) {
     interactif(p, legende = "aucune")
   })
 
-  # Question d'ouverture : le pari est révélé à l'étape 2
-  output$pari_suite <- renderUI({
-    req(input$pari)
-    bonne <- correlations$var[correlations$Groupe == "Habitude de vie"][1]
-    tagList(
-      div(class = "pari-suite",
-          span("Pari enregistré : ", strong(libelles[[input$pari]]), ". Tirons la réponse."),
-          tags$button(id = "voir_reponse", class = "btn-ile", `data-bonne` = bonne, `data-choisi` = input$pari,
-                      span("Révéler la réponse"), span(class = "bulle", ico("sparkle")))),
-      div(class = "verdict")
-    )
-  })
-  # Navigation : la pilule flottante envoie la page demandée
-  observeEvent(input$nav, updateTabsetPanel(session, "pages", input$nav))
-
-  output$pari_resultat <- renderUI({
-    req(input$pari)
-    hab <- correlations %>% filter(Groupe == "Habitude de vie") %>% mutate(rang = row_number())
-    if (input$pari == "Moyen_Transport") {
-      return(div(class = "pari-resultat", ico("lightbulb"),
-        span(strong("Votre pari : moyen de transport. "), "Ses modalités n'ont pas d'ordre : on ne peut pas le classer par
-             corrélation. L'habitude la plus liée est : ", tolower(hab$Variable[1]), " (corrélation ",
-             paste0(ifelse(hab$rho[1] > 0, "+", ""), fmt(hab$rho[1])), ").")))
-    }
-    r <- hab[hab$var == input$pari, ]
-    gagne <- r$rang == 1
-    signe <- function(x) paste0(ifelse(x > 0, "+", ""), fmt(x))
-    div(class = paste("pari-resultat", if (gagne) "gagne" else ""),
-        ico(if (gagne) "check-circle" else "lightbulb"),
-        span(strong("Votre pari : ", libelles[[input$pari]], ". "),
-             if (gagne) paste0("C'est bien l'habitude la plus liée au niveau d'obésité (corrélation ", signe(r$rho), ").")
-             else paste0("Elle arrive ", r$rang, "e sur ", nrow(hab), " habitudes (corrélation ", signe(r$rho),
-                         "). La plus liée est : ", tolower(hab$Variable[1]), " (", signe(hab$rho[1]), ").")))
+  # Navigation bornée aux cinq étapes du parcours.
+  observeEvent(input$nav, {
+    if (input$nav %in% names(pages)) updateTabsetPanel(session, "pages", input$nav)
   })
 
   # ============================================================
@@ -114,7 +83,7 @@ server <- function(input, output, session) {
     d <- correlations %>%
       mutate(Variable = factor(Variable, levels = rev(Variable)),
              Sens = ifelse(rho > 0, "Va avec plus d'obésité", "Va avec moins d'obésité"),
-             texte = paste0(Variable, "<br>Corrélation : ", ifelse(rho > 0, "+", ""), fmt(rho), " (lien ", Force, ")",
+             texte = paste0(Variable, "<br>ρ de Spearman : ", ifelse(rho > 0, "+", ""), fmt(rho), "<br>p corrigée : ", fmt_p(p_holm),
                             "<br>", ifelse(rho > 0, "Plus d'obésité", "Moins d'obésité"), " quand on a tendance à ",
                             sens_lecture[var], ifelse(Groupe == "Facteur non modifiable", "<br>Facteur non modifiable", "")))
     choisie <- filter(d, var == input$explorer_var)
@@ -122,7 +91,7 @@ server <- function(input, output, session) {
       geom_col(width = 0.68, colour = encre, linewidth = 0.7) +
       geom_col(data = choisie, fill = "#F7D23E66", colour = encre, linewidth = 1.6, width = 0.68) +
       geom_vline(xintercept = 0, colour = encre_3) +
-      scale_fill_manual(values = c("Va avec plus d'obésité" = couleurs_niveau[["Obésité"]], "Va avec moins d'obésité" = "#3E8E57"),
+      scale_fill_manual(values = c("Va avec plus d'obésité" = couleur_accent, "Va avec moins d'obésité" = "#6E6A60"),
                         name = NULL) +
       scale_x_continuous(limits = c(-0.65, 0.65), breaks = c(-0.5, 0, 0.5), labels = c("−0,5", "0", "+0,5")) +
       labs(x = NULL, y = NULL) +
@@ -140,26 +109,26 @@ server <- function(input, output, session) {
   observeEvent(input$voir_transport, updateSelectInput(session, "explorer_var", selected = "Moyen_Transport"))
 
   # Clic sur une barre du classement : on explore cette variable
-  observeEvent(event_data("plotly_click", source = "classement"), {
+  observeEvent(input[["plotly_click-classement"]], {
     v <- event_data("plotly_click", source = "classement")$customdata
     if (!is.null(v) && v %in% explicatives) updateSelectInput(session, "explorer_var", selected = v)
   })
 
   output$explorer_barres <- renderPlotly({
-    v <- input$explorer_var
+    v <- req(input$explorer_var)
     barres_empilees(data_classes[[v]], libelles[[v]])
   })
 
   output$explorer_message <- renderUI({
-    v <- input$explorer_var
+    v <- req(input$explorer_var)
     r <- part_risque(v) %>% arrange(desc(risque))
-    ecart <- HTML(paste0(" Surpoids ou obésité : <strong>", pct(r$risque[1]), "</strong> chez « ", r$modalite[1],
-                         " » contre <strong>", pct(r$risque[nrow(r)]), "</strong> chez « ", r$modalite[nrow(r)], " »."))
+    ecart <- HTML(paste0(" Parts observées de surpoids ou d’obésité : <strong>", pct(r$risque[1]), "</strong> pour « ", r$modalite[1],
+                         " » (n = ", r$n[1], ") et <strong>", pct(r$risque[nrow(r)]), "</strong> pour « ", r$modalite[nrow(r)], " » (n = ", r$n[nrow(r)], ")."))
     if (v %in% vars_ordonnees) {
       l <- correlations[correlations$var == v, ]
-      a_retenir(HTML(paste0("Corrélation <strong>", ifelse(l$rho > 0, "+", ""), fmt(l$rho), "</strong> (lien ", l$Force, ") : ",
-                            if (l$rho > 0) "le niveau d'obésité est plus élevé" else "le niveau d'obésité est plus faible",
-                            " quand on a tendance à ", sens_lecture[[v]], ".")), ecart)
+      a_retenir(HTML(paste0("ρ de Spearman : <strong>", ifelse(l$rho > 0, "+", ""), fmt(l$rho), "</strong> ; p corrigée ", fmt_p(l$p_holm), ". ",
+        if (l$p_holm >= .05) "Aucune association monotone détectée au seuil de 5 %." else
+          paste0("Association brute ", if (l$rho > 0) "positive" else "négative", " avec la catégorie de poids quand on a tendance à ", sens_lecture[[v]], "."))), ecart)
     } else {
       a_retenir(HTML(paste0("Pas de corrélation possible (modalités sans ordre). Force du lien : <strong>",
                             fmt(classement$V[classement$var == v]), "</strong>.")), ecart)
@@ -172,18 +141,21 @@ server <- function(input, output, session) {
   # Profils prêts à l'emploi : on recopie leurs valeurs dans les réglages
   appliquer_profil <- function(profil) {
     updateSliderInput(session, "sim_Age", value = profil$Age)
-    for (v in c("Genre", habitudes_sim)) updateSelectInput(session, paste0("sim_", v), selected = profil[[v]])
+    updateSliderInput(session, "sim_Taille_cm", value = profil$Taille_cm)
+    for (v in setdiff(explicatives, c("Age", "Taille_cm"))) updateSelectInput(session, paste0("sim_", v), selected = profil[[v]])
   }
-  observeEvent(input$profil_type, appliquer_profil(profils_demo$type))
-  observeEvent(input$profil_sain, appliquer_profil(profils_demo$sain))
-  observeEvent(input$profil_risque, appliquer_profil(profils_demo$risque))
+  observeEvent(input$profil_type, appliquer_profil(profil_type))
+  observeEvent(input$profil_sain, updateSelectInput(session, "sim_Frequence_Legumes", selected = "Toujours"))
+  observeEvent(input$profil_risque, updateSelectInput(session, "sim_Repas_Principaux", selected = "Plus de 3"))
 
-  # Profil réglé par l'utilisateur ; les variables absentes des réglages restent au profil le plus courant
+  # Profil fictif : les 14 caractéristiques sont réglables.
   profil <- reactive({
-    req(input$sim_Age, input$sim_Genre, all(sapply(habitudes_sim, function(v) !is.null(input[[paste0("sim_", v)]]))))
+    req(input$sim_Age, input$sim_Taille_cm,
+        all(sapply(setdiff(explicatives, c("Age", "Taille_cm")), function(v) !is.null(input[[paste0("sim_", v)]]))))
     p <- profil_type
     p$Age <- input$sim_Age
-    for (v in c("Genre", habitudes_sim)) p[[v]] <- input[[paste0("sim_", v)]]
+    p$Taille_cm <- input$sim_Taille_cm
+    for (v in setdiff(explicatives, c("Age", "Taille_cm"))) p[[v]] <- input[[paste0("sim_", v)]]
     p
   })
   probas <- reactive(probas_profil(profil()))
@@ -191,7 +163,6 @@ server <- function(input, output, session) {
     pr <- probas()
     r <- sum(pr[c("Surpoids", "Obésité")])
     rampe <- colorRampPalette(c(couleurs_niveau[["Normal"]], couleurs_niveau[["Surpoids"]], couleurs_niveau[["Obésité"]]))(101)
-    session$sendCustomMessage("corpulence", list(id = "sil_sim", k = corpulence(pr)))
     session$sendCustomMessage("nombre", list(id = "sim_pct", valeur = round(100 * r), couleur = rampe[round(100 * r) + 1]))
   })
   risque <- function(pr) sum(pr[c("Surpoids", "Obésité")])
@@ -199,7 +170,7 @@ server <- function(input, output, session) {
   output$sim_resultat <- renderUI({
     r <- risque(probas())
     r_type <- risque(probas_profil(profil_type))
-    p(class = "comparaison", "Profil le plus courant : ", pct(r_type),
+    p(class = "comparaison", "Profil de référence fictif : ", pct(r_type),
       if (abs(r - r_type) >= 0.005) paste0(" · ", if (r > r_type) "+" else "−", fmt(100 * abs(r - r_type), 0), " points") else "")
   })
 
@@ -229,9 +200,9 @@ server <- function(input, output, session) {
     })) %>% mutate(Habitude = reorder(Habitude, max - min))
     d$texte <- paste0(d$Habitude, "<br>De ", pct(d$min), " (", d$favorable, ") à ", pct(d$max), " (", d$defavorable, ")",
                       "<br>Choix actuel : ", d$choisie, " → ", pct(d$actuel))
-    p <- ggplot(d, aes(y = Habitude)) +
+    p <- ggplot(d, aes(y = Habitude, text = texte)) +
       geom_segment(aes(x = min, xend = max, yend = Habitude), colour = gris_doux, linewidth = 3.2, lineend = "round") +
-      geom_point(aes(x = actuel, text = texte), colour = couleur_accent, size = 3.6) +
+      geom_point(aes(x = actuel), colour = couleur_accent, size = 3.6) +
       scale_x_continuous(labels = scales::percent, limits = c(0, 1)) +
       labs(x = "Probabilité de surpoids ou d'obésité", y = NULL) +
       theme_app + theme(panel.grid.major.y = element_blank())
@@ -256,64 +227,80 @@ server <- function(input, output, session) {
       mutate(etiquette = paste0(Variable, " : ", Modalite, ifelse(Reference == "", "", paste0(" (", Reference, ")"))),
              etiquette = factor(etiquette, levels = rev(etiquette)),
              Effet = case_when(bas > 1 ~ "Associé à un niveau plus élevé", haut < 1 ~ "Associé à un niveau plus faible",
-                               TRUE ~ "Non significatif"),
+                               TRUE ~ "IC contenant 1"),
              texte = paste0(etiquette, "<br>OR = ", fmt(OR), " [", fmt(bas), " ; ", fmt(haut), "]"))
-    p <- ggplot(d, aes(y = etiquette, colour = Effet)) +
+    p <- ggplot(d, aes(y = etiquette, colour = Effet, text = texte)) +
       geom_vline(xintercept = 1, linetype = "dashed", colour = encre_3) +
       geom_segment(aes(x = bas, xend = haut, yend = etiquette), linewidth = 1) +
-      geom_point(aes(x = OR, text = texte), size = 3) +
+      geom_point(aes(x = OR), size = 3) +
       scale_colour_manual(values = c("Associé à un niveau plus élevé" = couleurs_niveau[["Obésité"]],
                                      "Associé à un niveau plus faible" = "#3E8E57",
-                                     "Non significatif" = "#A9A6A0"), name = NULL) +
+                                     "IC contenant 1" = "#77736A"), name = NULL) +
       scale_x_log10(breaks = c(0.1, 0.3, 1, 3, 10, 30), labels = function(x) format(x, decimal.mark = ",")) +
       labs(x = "Odds ratio (échelle logarithmique)", y = NULL) +
       theme_app
     interactif(p)
   })
 
-  or_de <- function(v, m) table_or[table_or$var == v & table_or$Modalite == m, ]
-
   output$ajustement_messages <- renderUI({
-    repas <- or_de("Repas_Principaux", "Plus de 3"); legumes <- or_de("Frequence_Legumes", "Toujours")
-    tabac <- or_de("Fumeur", "Non")
-    ic <- function(o) paste0("IC 95 % : ", fmt(o$bas), " à ", fmt(o$haut))
     div(class = "messages",
-      div(class = "message", span(class = "num", "↗"),
-          div(strong("Les repas et les légumes restent très associés"),
-              span(paste0("Plus de 3 repas par jour multiplie la cote d'un niveau supérieur par ", fmt(repas$OR, 1), " (", ic(repas),
-                          ") ; manger toujours des légumes la divise par ", fmt(1 / legumes$OR, 0), ".")))),
-      div(class = "message", span(class = "num", "∅"),
-          div(strong("L'association du tabac disparaît"),
-              span(paste0("Prise seule, elle existe : 35 % des fumeurs sont obèses, contre 11 % des non-fumeurs. À caractéristiques
-                          égales, elle n'est plus significative (OR des non-fumeurs ", fmt(tabac$OR), ", ", ic(tabac), ")."),
-                   if (length(precalcul$retirees_aic) > 0)
-                     paste0(" La sélection par AIC retirerait d'ailleurs : ", paste(tolower(libelles[precalcul$retirees_aic]), collapse = " et "), ".")))),
-      div(class = "message", span(class = "num", "↺"),
-          div(strong("Le sport et le suivi des calories vont dans le sens inverse de l'intuition"),
-              span("Ils sont associés à un niveau plus élevé. L'enquête étant faite à un seul moment, une explication probable
-                    est inverse : on se met au sport ou on compte ses calories à cause de son poids.")))
+      div(class = "message", span(class = "num", "01"),
+          div(strong("Légumes et repas : une association après ajustement"),
+              span("Dans le modèle multinomial, ces deux variables restent associées aux catégories de poids, les 13 autres caractéristiques prises en compte (tests globaux, p corrigées < 0,001). Cela ne prouve pas qu’un changement de réponse modifierait le poids."))),
+      div(class = "message", span(class = "num", "02"),
+          div(strong("Le tabac illustre l’importance du choix du modèle"),
+              span(paste0("Dans les données, ", pct(part_obesite_tabac[["Oui"]]), " des fumeurs sont classés en obésité, contre ",
+                pct(part_obesite_tabac[["Non"]]), " des non-fumeurs. L’association ajustée est détectée par le multinomial (p corrigée ",
+                fmt_p(p_ajustee("Fumeur")), "). Le modèle ordinal ne la détecte pas, mais son hypothèse de cotes proportionnelles est rejetée : nous ne concluons donc pas à une disparition du lien.")))),
+      div(class = "message", span(class = "num", "03"),
+          div(strong("Activité physique : un résultat à questionner"),
+              span("La corrélation brute est positive dans cet échantillon. Une adaptation des habitudes après une prise de poids est une explication possible, parmi d’autres ; cette enquête ne permet pas de vérifier la chronologie. Ce résultat ne démontre pas que l’activité physique ferait prendre du poids.")))
     )
+  })
+
+  output$associations_table <- renderUI({
+    d <- associations_ajustees[associations_ajustees$var %in% habitudes_vie, ]
+    # Ordre du questionnaire : la p-value ne sert pas à classer l’importance des habitudes.
+    d <- d[match(habitudes_vie, d$var), ]
+    div(class = "table-responsive", tags$table(class = "table table-associations",
+      tags$caption("Associations avec la catégorie de poids, ajustées sur les autres caractéristiques"),
+      tags$thead(tags$tr(tags$th(scope = "col", "Habitude"), tags$th(scope = "col", "p corrigée"))),
+      tags$tbody(lapply(seq_len(nrow(d)), function(i)
+        tags$tr(tags$th(scope = "row", d$Variable[i]), tags$td(fmt_p(d$p_holm[i])))))))
   })
 
   output$modele_qualite <- renderUI({
     base <- max(prop.table(table(data$Niveau_Obesite)))
     tagList(
       div(class = "tuiles",
-        tuile(pct(precalcul$exactitude_cv[["multinomial"]], 1), "bien classés par le modèle multinomial (validation croisée à 10 plis)"),
-        tuile(pct(precalcul$exactitude_cv[["ordinal"]], 1), "bien classés par le modèle ordinal"),
-        tuile(pct(base, 1), "en prédisant toujours « Normal » (référence sans modèle)"),
-        tuile(paste(precalcul$cotes_rejetees, "/", precalcul$cotes_testees), "variables qui rejettent l'hypothèse des cotes proportionnelles")
+        tuile(pct(precalcul$exactitude_cv[["multinomial"]], 1), "exactitude du multinomial · validation croisée à 10 plis"),
+        tuile(pct(validation_modele$exactitude_equilibree, 1), "exactitude équilibrée · moyenne des rappels des quatre catégories"),
+        tuile(pct(base, 1), "référence descriptive · toujours prédire la catégorie majoritaire « Normal »"),
+        tuile(pct(min(validation_modele$rappel), 1), "rappel le plus faible · insuffisance pondérale")
       ),
       div(class = "grille-deux", style = "margin-top: 16px;",
-        p(strong("Modèle ordinal, pour lire les associations. "), "Il donne un seul odds ratio par réponse, facile à lire. Mais il
-          suppose qu'une variable a le même effet entre chaque niveau (normal → surpoids, surpoids → obésité…). Le test rejette
-          cette hypothèse : ses odds ratios sont donc des moyennes sur les trois seuils, valables pour le sens et l'ordre de
-          grandeur des associations."),
-        p(strong("Modèle multinomial, pour les probabilités. "), "Il ne fait pas cette hypothèse. Il s'ajuste beaucoup mieux (AIC ",
-          fmt(precalcul$aic[["multinomial"]], 0), " contre ", fmt(precalcul$aic[["ordinal"]], 0), ") et prédit mieux. C'est lui qui
-          calcule toutes les probabilités du simulateur. Les deux modèles sont ajustés sur les 14 variables : aucune sélection
-          préalable, pour que les intervalles de confiance restent valides.")
-      )
+        p(strong("Le multinomial pour les analyses principales. "),
+          "Il estime séparément les quatre catégories sans imposer les cotes proportionnelles. Il sert aux tests ajustés et au simulateur. Les 14 caractéristiques sont incluses, sans sélection préalable. AIC : ",
+          fmt(precalcul$aic[["multinomial"]], 0), " contre ", fmt(precalcul$aic[["ordinal"]], 0), " pour l’ordinal."),
+        p(strong("Une validation interne, avec des limites. "),
+          "L’exactitude est une moyenne sur 10 plis : à chaque tour, le modèle est réajusté sur 9 plis et évalué sur le pli restant. Le tableau ci-dessous utilise ces prédictions hors pli. La classe minoritaire est moins bien reconnue. La calibration des probabilités et la validité externe restent à évaluer.")),
+      div(class = "table-responsive", tags$table(class = "table table-associations",
+        tags$caption("Performances par catégorie sur les prédictions hors pli · rappel = part de la catégorie observée correctement reconnue ; précision = part des prédictions de cette catégorie qui sont correctes"),
+        tags$thead(tags$tr(tags$th(scope = "col", "Catégorie observée"), tags$th(scope = "col", "n"), tags$th(scope = "col", "Rappel"), tags$th(scope = "col", "Précision"))),
+        tags$tbody(lapply(niveaux, function(n) tags$tr(tags$th(scope = "row", n), tags$td(effectifs_niveaux[[n]]),
+          tags$td(pct(validation_modele$rappel[[n]], 1)), tags$td(pct(validation_modele$precision[[n]], 1))))))),
+      tags$details(class = "details-methode", tags$summary("Matrice de confusion : catégories observées et prédites"),
+        div(class = "table-responsive", tags$table(class = "table table-associations",
+          tags$caption("Lignes : catégories observées · colonnes : catégories prédites · prédictions hors pli"),
+          tags$thead(tags$tr(tags$th(scope = "col", "Observée / prédite"), lapply(niveaux, function(n) tags$th(scope = "col", n)))),
+          tags$tbody(lapply(niveaux, function(n) tags$tr(tags$th(scope = "row", n),
+            lapply(as.integer(validation_modele$confusion[n, ]), tags$td))))))),
+      tags$details(class = "details-methode", tags$summary("Détails des tests et limites de l’ordinal"),
+        p("Tests ajustés : rapports de vraisemblance entre le multinomial complet et 14 modèles omettant chacun une caractéristique. Correction de Holm sur les 14 p-values. Une p-value faible n’indique ni un effet important ni une causalité."),
+        p("L’ordinal suppose un effet commun entre les trois seuils des catégories. Cette hypothèse est rejetée pour ", precalcul$cotes_rejetees, " variables sur ", precalcul$cotes_testees,
+          " testées au seuil de 5 % (tests non corrigés). Ses coefficients ne sont pas des moyennes garanties des effets par seuil. Ses odds ratios sont conservés en annexe à titre exploratoire ; son exactitude interne est de ",
+          pct(precalcul$exactitude_cv[["ordinal"]], 1), "."),
+        p("Protocole reproduit : graine 2024, 10 plis aléatoires de tailles proches, non stratifiés. Les rappels et précisions sont calculés sur l’ensemble des prédictions hors pli ; l’exactitude est la moyenne des exactitudes des plis."))
     )
   })
 
@@ -321,38 +308,34 @@ server <- function(input, output, session) {
   # 4. PROFILS DE VIE
   # ============================================================
   # Les groupes de la CAH sont renumérotés du moins au plus touché par le surpoids et l'obésité
-  risque_brut <- tapply(data$Niveau_Obesite %in% c("Surpoids", "Obésité"), cah$data.clust$clust, mean)
-  rang <- rank(risque_brut, ties.method = "first")
-  k_groupes <- length(rang)
-  groupes <- factor(paste("Groupe", rang[as.character(cah$data.clust$clust)]), levels = paste("Groupe", seq_len(k_groupes)))
-  couleurs_groupes <- setNames(palette_classes[seq_len(k_groupes)], levels(groupes))
-  risque_groupe <- tapply(data$Niveau_Obesite %in% c("Surpoids", "Obésité"), groupes, mean)
-  classe_d_origine <- setNames(as.integer(names(rang)), rang)   # numéro de groupe -> classe de la CAH
+  k_groupes <- nlevels(groupes_profils)
+  groupes <- groupes_profils
+  couleurs_groupes <- setNames(rep(couleur_accent, k_groupes), levels(groupes))
+  risque_groupe <- part_par_groupe
+  classe_d_origine <- origine_groupes
 
   output$profils_obesite <- renderPlotly(barres_empilees(factor(sub("Groupe ", "", groupes), levels = sub("Groupe ", "", levels(groupes))),
-                                                         "Groupe", effectifs = FALSE))
+                                                         "Groupe", effectifs = TRUE))
 
   output$profils_message <- renderUI({
     a_retenir(HTML(paste0("Selon le groupe, la part de surpoids ou d'obésité va de <strong>", pct(min(risque_groupe)),
-               "</strong> à <strong>", pct(max(risque_groupe)), "</strong> : les profils de vie séparent nettement les niveaux d'obésité.")))
+               "</strong> à <strong>", pct(max(risque_groupe)), "</strong>. Ces écarts décrivent les groupes dans cet échantillon, sans validation de leur stabilité.")))
   })
 
   output$profils_portraits <- renderUI({
     div(class = "portraits", lapply(seq_len(k_groupes), function(k) {
       desc <- cah$desc.var$category[[classe_d_origine[[as.character(k)]]]]
-      traits <- rownames(desc)[desc[, "v.test"] > 0]
+      traits <- rownames(desc)[desc[, "v.test"] > 0 & !startsWith(rownames(desc), "Niveau_Obesite=")]
       traits <- sub("^[^=]*=", "", traits)
-      traits <- head(traits[!startsWith(traits, "Niveau d'obésité")], 3)
+      traits <- head(traits, 3)
       r <- risque_groupe[[k]]
       couleur <- colorRampPalette(c(couleurs_niveau[["Normal"]], couleurs_niveau[["Surpoids"]], couleurs_niveau[["Obésité"]]))(101)[round(100 * r) + 1]
-      # corpulence moyenne attendue du groupe, pour la mascotte
-      k_mascotte <- corpulence(prop.table(table(factor(data$Niveau_Obesite[groupes == levels(groupes)[k]], levels = niveaux))))
       div(class = "portrait",
-        silhouette_svg(k = round(k_mascotte, 2), hauteur = 111),
         div(class = "portrait-tete",
             span(class = "portrait-nom", span(class = "pastille", style = paste0("background:", couleurs_groupes[[k]])),
                  levels(groupes)[k], span(class = "note", paste0("(", sum(groupes == levels(groupes)[k]), ")"))),
-            span(class = "portrait-risque", style = paste0("color:", couleur), pct(r))),
+            span(class = "portrait-risque", pct(r))),
+        p(class = "note", "Part observée de surpoids ou d’obésité"),
         div(class = "jauge", span(style = paste0("width:", round(100 * r), "%; background:", couleur))),
         tags$ul(lapply(traits, tags$li))
       )
