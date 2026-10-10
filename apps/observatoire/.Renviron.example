@@ -1,0 +1,9 @@
+# Copier ce fichier en .Renviron dans obesity-shiny, puis renseigner la clé
+# uniquement dans ce fichier local. Ne pas la publier ni la coller dans un chat.
+OBESITY_LLM_PROVIDER=openai
+OBESITY_LLM_MODEL=gpt-5.4-mini
+OPENAI_API_KEY=
+
+# Alternative locale : remplacer le fournisseur et le modèle par ces valeurs.
+# OBESITY_LLM_PROVIDER=ollama
+# OBESITY_LLM_MODEL=llama3.2:3b

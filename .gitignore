@@ -1,0 +1,26 @@
+# État local de R/RStudio et fichiers du système
+.DS_Store
+.Rproj.user/
+.RData
+.Rhistory
+.Ruserdata
+
+# Secrets : conserver uniquement les modèles de configuration
+.Renviron
+.Renviron.*
+!.Renviron.example
+.env
+.env.*
+!.env.example
+
+# Bibliothèques et caches renv (le fichier renv.lock reste suivi)
+renv/library/
+renv/local/
+renv/cellar/
+renv/lock/
+renv/python/
+renv/sandbox/
+renv/staging/
+
+# Métadonnées de publication locales
+rsconnect/
