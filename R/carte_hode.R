@@ -27,7 +27,7 @@ pictogrammes_modalites <- list(
   Activite=c("couch", "person-walking", "person-running", "dumbbell", "medal"),
   Technologie=c("clock", "laptop", "mobile-screen-button"),
   Transport=c("car", "motorcycle", "bicycle", "bus", "person-walking"),
-  Classe=rep("user", 4)
+  Classe=paste0("poids-", 1:4)
 )
 modalites_afdm$Icone <- vapply(seq_len(nrow(modalites_afdm)), function(i) {
   v <- modalites_afdm$Variable[i]
@@ -35,8 +35,11 @@ modalites_afdm$Icone <- vapply(seq_len(nrow(modalites_afdm)), function(i) {
   pictogrammes_modalites[[v]][position]
 }, character(1))
 sources_pictogrammes <- setNames(lapply(unique(modalites_afdm$Icone), function(nom) {
-  contenu <- jsonlite::base64_enc(readBin(file.path("apps", "observatoire", "www", "pictogrammes", paste0(nom, ".png")), "raw", n=1e6))
-  paste0("data:image/png;base64,", gsub("[\r\n]", "", contenu))
+  poids <- startsWith(nom, "poids-")
+  chemin <- if (poids) file.path("www", "pictogrammes-poids", paste0(nom, ".svg")) else
+    file.path("apps", "observatoire", "www", "pictogrammes", paste0(nom, ".png"))
+  contenu <- jsonlite::base64_enc(readBin(chemin, "raw", n=1e6))
+  paste0(if (poids) "data:image/svg+xml;base64," else "data:image/png;base64,", gsub("[\r\n]", "", contenu))
 }), unique(modalites_afdm$Icone))
 
 
