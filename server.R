@@ -43,11 +43,12 @@ barres_empilees <- function(groupe, titre, effectifs = TRUE) {
               position = position_stack(vjust = 0.5), size = 3.7, family = police) +
     scale_colour_identity() +
     scale_fill_manual(values = couleurs_niveau, name = NULL) +
-    scale_x_discrete(labels = etiquettes) +
+    scale_x_discrete(labels = etiquettes, limits = rev(levels(factor(groupe)))) +
     scale_y_continuous(labels = scales::percent, breaks = seq(0, 1, 0.25)) +
+    coord_flip() +
     labs(x = NULL, y = NULL) +
-    theme_app + theme(panel.grid.major.x = element_blank())
-  interactif(p)
+    theme_app + theme(panel.grid.major.y = element_blank())
+  interactif(p) %>% layout(yaxis = list(automargin = TRUE))
 }
 
 # Tableau lisible des effectifs observés ou attendus.
