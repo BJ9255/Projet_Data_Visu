@@ -69,9 +69,6 @@ ui <- fluidPage(
         )
       ),
       div(class = "section",
-        div(class = "cadrage-projet reveal",
-          div(span(class = "resultat-kicker", "Pour qui ?"), h2("Comprendre pour mieux questionner"), p(cible_projet)),
-          div(span(class = "resultat-kicker", "Dans quel but ?"), h2("Lire les liens avec recul"), p(but_projet))),
         div(class = "intro-resultats reveal", pastille("Trois fils conducteurs"), h2("Ce que l’enquête nous permet d’explorer")),
         div(class = "resultats-grille reveal", resultats_cles_ui()),
         rangee(
@@ -164,8 +161,8 @@ ui <- fluidPage(
           p("Les répartitions des catégories de poids varient selon les réponses, notamment pour la consommation de légumes. Le χ² détecte une association dans ce tableau. L’AFDM permet d’explorer les caractéristiques conjointement, sur une projection partielle. Ces résultats décrivent l’échantillon et ne permettent pas d’établir des causes.")),
         div(class = "resultats-grille reveal", resultats_cles_ui()),
         rangee(
-          carte("Pour notre public", largeur = 6,
-            h3("Trois réflexes de lecture"), tags$ol(class = "etapes",
+          carte("Trois réflexes de lecture", largeur = 6,
+            tags$ol(class = "etapes",
               tags$li(strong("Regarder les effectifs"), "Comparer des proportions avec leur dénominateur."),
               tags$li(strong("Distinguer observation et test"), "Le graphique décrit un écart ; le χ² teste l’indépendance, sans démontrer une cause."),
               tags$li(strong("Questionner le sens du lien"), "Sans chronologie, on ne peut pas distinguer cause et conséquence."))),
