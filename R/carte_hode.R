@@ -99,7 +99,7 @@ carte_hode_server <- function(id) {
       points <- idx[actif[idx]]
       carte <- plotly::add_trace(carte, x = individus_afdm$Dimension_1[points], y = individus_afdm$Dimension_2[points],
         type = "scatter", mode = "markers", name = classe, legendgroup = classe,
-        text = profil[points], hoverinfo = "text", marker = list(color = couleurs_classes[[classe]], size = if (mise_en_avant) 7 else 5, opacity = if (mise_en_avant) 0.8 else 0.45))
+        text = profil[points], hoverinfo = "text", marker = list(color = couleurs_classes[[classe]], size = if (mise_en_avant) 7 else 5, opacity = if (mise_en_avant) 0.9 else 0.65))
       if (isTRUE(input$ellipses)) {
         coords <- as.matrix(individus_afdm[idx, c("Dimension_1", "Dimension_2")])
         decomposition <- eigen(cov(coords), symmetric = TRUE)

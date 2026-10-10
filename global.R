@@ -86,7 +86,7 @@ levels_ou_plage <- function(v) {
 # Palette contrôlée pour le daltonisme : bleu, vert, orange, rouge
 niveaux <- levels(data$Niveau_Obesite)
 # (teintes éclaircies pour rester lisibles sur le fond sombre de l'application)
-couleurs_niveau <- setNames(c("#3D78B0", "#238A8D", "#A779AB", "#624A88"), niveaux)
+couleurs_niveau <- setNames(c("#0072B2", "#E69F00", "#009E73", "#8B4B9E"), niveaux)
 couleur_accent  <- "#3D6FB6"
 palette_classes <- c("#2A78D6", "#EB6834", "#1BAF7A", "#EDA100", "#E87BA4", "#008300", "#4A3AA7", "#E34948")
 
