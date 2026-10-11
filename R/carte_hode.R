@@ -78,7 +78,7 @@ carte_hode_server <- function(id) {
         m <- modalites_afdm[modalites_afdm$Variable == variable, ]
         shiny::div(class="hode-legende-section", shiny::h3(titre),
           lapply(seq_len(nrow(m)), function(i) shiny::div(class="hode-legende-ligne",
-            shiny::tags$img(src=sources_pictogrammes[[m$Icone[i]]], alt="", `aria-hidden`="true"),
+            shiny::tags$img(src=sources_pictogrammes[[m$Icone[i]]], width="28", height="28", alt="", `aria-hidden`="true"),
             shiny::span(m$Modalite[i]))))
       }
       shiny::tagList(
