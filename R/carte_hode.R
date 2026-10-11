@@ -61,7 +61,7 @@ carte_hode_ui <- function(id) {
     )),
     shiny::div(class="carte-afdm-boite", plotly::plotlyOutput(ns("carte"), height="620px")),
     shiny::uiOutput(ns("resume")),
-    shiny::p(class="note", "Survolez les points ; tracez un rectangle pour zoomer ; double-cliquez pour réinitialiser la vue. Couleurs et formes distinguent les catégories. Les axes restent fixes lors des sélections, avec la même unité sur les deux dimensions. Les ellipses sont calculées sur les catégories entières, même lorsqu’une réponse est sélectionnée : repères de dispersion sous approximation normale, pas des intervalles de confiance ni des frontières de classification.")
+    shiny::p(class="note", "L’âge est une variable quantitative active : il participe à la construction des axes. Les quatre pictogrammes de poids restent visibles comme repères supplémentaires ; ils ne construisent pas les axes. Survolez les points ; tracez un rectangle pour zoomer ; double-cliquez pour réinitialiser la vue. Couleurs et formes distinguent les catégories. Les axes restent fixes lors des sélections, avec la même unité sur les deux dimensions. Les ellipses sont calculées sur les catégories entières, même lorsqu’une réponse est sélectionnée : repères de dispersion sous approximation normale, pas des intervalles de confiance ni des frontières de classification.")
   )
 }
 
@@ -108,20 +108,22 @@ carte_hode_server <- function(id) {
         ellipse <- sweep(ellipse, 2, colMeans(coords), "+")
         carte <- plotly::add_trace(carte, x = ellipse[, 1], y = ellipse[, 2], type = "scatter", mode = "lines",
           name = classe, legendgroup = classe, showlegend = FALSE, hoverinfo = "skip",
+          fill = "toself", fillcolor = plotly::toRGB(couleurs_classes[[classe]], alpha = 0.10),
           line = list(color = couleurs_classes[[classe]], width = 1.5))
       }
     }
-    modalites <- modalites_afdm |> filter(Variable == variable)
+    modalites <- modalites_afdm |> filter(Variable == variable | Variable == "Classe")
+    modalite_focus <- nzchar(focus) & modalites$Variable == variable & modalites$Modalite == focus
     carte <- plotly::add_trace(carte, x = modalites$Dimension_1, y = modalites$Dimension_2,
       type = "scatter", mode = "markers+text", name = "Modalités", showlegend = FALSE,
       text = modalites$Modalite,
       textposition = rep(c("top center", "bottom left", "top right", "bottom right", "top left"), length.out = nrow(modalites)),
       textfont = list(size = 14, color = "#3A3833"),
       hovertext = paste0(modalites$Modalite, "<br>Repère de modalité · ", modalites$Type), hoverinfo = "text",
-      marker = list(symbol = "circle", size = ifelse(nzchar(focus) & modalites$Modalite == focus, 46, 35),
-        color = "white", line = list(color = "#1B1A17", width = ifelse(nzchar(focus) & modalites$Modalite == focus, 3, 1))))
+      marker = list(symbol = "circle", size = ifelse(modalite_focus | modalites$Variable == "Classe", 46, 35),
+        color = "white", line = list(color = ifelse(modalites$Variable == "Classe", couleurs_classes[modalites$Modalite], "#1B1A17"), width = ifelse(modalite_focus | modalites$Variable == "Classe", 3, 1))))
     images_modalites <- lapply(seq_len(nrow(modalites)), function(i) {
-      taille <- if (nzchar(focus) && modalites$Modalite[i] == focus) 0.52 else 0.40
+      taille <- if (modalite_focus[i] || modalites$Variable[i] == "Classe") 0.52 else 0.40
       list(source=sources_pictogrammes[[modalites$Icone[i]]], xref="x", yref="y",
         x=modalites$Dimension_1[i], y=modalites$Dimension_2[i],
         sizex=taille, sizey=taille, xanchor="center", yanchor="middle", sizing="contain", layer="above")

@@ -1,5 +1,6 @@
 # Depuis la racine du dépôt : Rscript --vanilla -e 'source("checks/verify-carte-hode.R")'
 source("global.R")
+stopifnot("Age" %in% vars_actives, is.numeric(data$Age), "Age" %in% rownames(afdm$quanti.var$coord))
 stopifnot(nrow(carte_hode_donnees$donnees)==1610,
   identical(carte_hode_donnees$individus_afdm$Dimension_1, unname(afdm$ind$coord[,1])),
   identical(carte_hode_donnees$individus_afdm$Dimension_2, unname(afdm$ind$coord[,2])))
@@ -12,7 +13,12 @@ shiny::testServer(carte_hode_server,args=list(id="hode"), {
     z <- jsonlite::fromJSON(output$carte,simplifyVector=FALSE)
     stopifnot(identical(z$x$layout$xaxis$range,axes$xaxis$range),identical(z$x$layout$yaxis$range,axes$yaxis$range))
     m <- modalites_afdm[modalites_afdm$Variable==v,]
-    stopifnot(length(z$x$layout$images)==nrow(m))
+    reperes <- modalites_afdm[modalites_afdm$Variable==v | modalites_afdm$Variable=="Classe",]
+    stopifnot(length(z$x$layout$images)==nrow(reperes))
+    sources <- vapply(z$x$layout$images, function(x) x$source, character(1))
+    stopifnot(sum(startsWith(sources,"data:image/svg+xml;base64,"))==4)
+    ellipses <- Filter(function(t) identical(t$fill,"toself"),z$x$data)
+    stopifnot(length(ellipses)==4, all(vapply(ellipses,function(t) grepl("0.1",t$fillcolor,fixed=TRUE),logical(1))))
     for (f in m$Modalite) {
       session$setInputs(focus=f)
       z <- jsonlite::fromJSON(output$carte,simplifyVector=FALSE)
