@@ -258,6 +258,12 @@ label, .control-label { color: var(--encre); font-weight: 800; font-size: 13px; 
 
 /* ---------- Mascotte qui marche sur la carte AFDM ---------- */
 .carte-afdm-boite { position: relative; }
+.container-fluid:has(.tab-pane[data-value="profils"].active) { max-width: 1600px; }
+.hode-map-toolbar { display: flex; justify-content: flex-end; margin-bottom: 12px; }
+.hode-map.carte-agrandie { position: fixed; inset: 0; z-index: 10000; overflow: auto; padding: 20px; background: var(--papier); }
+body.carte-ouverte { overflow: hidden; }
+.hode-map.carte-agrandie .carte-afdm-boite .plotly { height: max(400px, calc(100dvh - 230px)) !important; }
+@media (max-width: 767px) { .hode-map.carte-agrandie { padding: 12px; } }
 .marcheur { position: absolute; left: 0; top: 0; width: 48px; height: 72px; z-index: 4; pointer-events: none; overflow: visible; }
 .rejouer-marche { position: absolute; top: 6px; right: 14px; z-index: 5; }
 

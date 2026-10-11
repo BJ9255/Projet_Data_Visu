@@ -49,6 +49,15 @@
     var menu = document.getElementById("navigation_page");
     if (menu) menu.addEventListener("change", function () { aller(menu.value); });
     document.addEventListener("click", function (e) {
+      var agrandir = e.target.closest(".carte-plein-ecran");
+      if (agrandir) {
+        var carte = agrandir.closest(".hode-map");
+        var ouverte = carte.classList.toggle("carte-agrandie");
+        document.body.classList.toggle("carte-ouverte", ouverte);
+        agrandir.setAttribute("aria-expanded", String(ouverte));
+        agrandir.textContent = ouverte ? "Réduire la carte" : "Agrandir la carte";
+        setTimeout(function () { window.dispatchEvent(new Event("resize")); }, 60);
+      }
       var b = e.target.closest("[data-aller]");
       if (b) aller(b.dataset.aller);
     });
@@ -60,6 +69,10 @@
       window.dispatchEvent(new Event("resize"));
     });
     document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") {
+        var fermer = document.querySelector(".carte-agrandie .carte-plein-ecran");
+        if (fermer) { fermer.click(); fermer.focus(); }
+      }
       if (!e.altKey || (e.key !== "ArrowRight" && e.key !== "ArrowLeft")) return;
       if (e.target.closest("input, select, textarea, [contenteditable]")) return;
       var i = pages.indexOf(actuelle) + (e.key === "ArrowRight" ? 1 : -1);
