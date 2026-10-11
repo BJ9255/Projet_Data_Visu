@@ -54,12 +54,15 @@ sources_pictogrammes <- setNames(lapply(unique(modalites_afdm$Icone), function(n
 carte_hode_ui <- function(id) {
   ns <- shiny::NS(id)
   shiny::div(class="hode-map",
+    shiny::div(class="hode-map-toolbar",
+      shiny::tags$button(type="button", class="pilule carte-plein-ecran", `aria-expanded`="false",
+        `aria-controls`=ns("carte"), "Agrandir la carte")),
     shiny::div(class="hode-map-controls", shiny::fluidRow(
       shiny::column(4, shiny::selectInput(ns("variable"), "Caractéristique à explorer", carte_hode_donnees$choix_modalites_afdm, selected="Activite")),
       shiny::column(4, shiny::uiOutput(ns("choix_focus"))),
       shiny::column(4, shiny::checkboxInput(ns("ellipses"), "Ellipses de dispersion (repère 80 %)", FALSE))
     )),
-    shiny::div(class="carte-afdm-boite", plotly::plotlyOutput(ns("carte"), height="620px")),
+    shiny::div(class="carte-afdm-boite", plotly::plotlyOutput(ns("carte"), height="800px")),
     shiny::uiOutput(ns("resume")),
     shiny::p(class="note", "L’âge est une variable quantitative active : il participe à la construction des axes. Les quatre pictogrammes de poids restent visibles comme repères supplémentaires ; ils ne construisent pas les axes. Survolez les points ; tracez un rectangle pour zoomer ; double-cliquez pour réinitialiser la vue. Couleurs et formes distinguent les catégories. Les axes restent fixes lors des sélections, avec la même unité sur les deux dimensions. Les ellipses sont calculées sur les catégories entières, même lorsqu’une réponse est sélectionnée : repères de dispersion sous approximation normale, pas des intervalles de confiance ni des frontières de classification.")
   )
