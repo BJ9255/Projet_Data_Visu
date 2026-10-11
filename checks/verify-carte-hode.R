@@ -15,13 +15,8 @@ shiny::testServer(carte_hode_server,args=list(id="hode"), {
     m <- modalites_afdm[modalites_afdm$Variable==v,]
     reperes <- modalites_afdm[modalites_afdm$Variable==v | modalites_afdm$Variable=="Classe",]
     stopifnot(length(z$x$layout$images)==nrow(reperes))
-    etiquettes <- z$x$layout$annotations
-    stopifnot(length(etiquettes)==nrow(reperes))
-    for (a in etiquettes) stopifnot(any(abs(reperes$Dimension_1-a$x)<1e-8 & abs(reperes$Dimension_2-a$y)<1e-8))
-    for (cote in c("left", "right")) {
-      ys <- vapply(Filter(function(a) identical(a$xanchor,cote), etiquettes), function(a) a$ay, numeric(1))
-      stopifnot(length(unique(ys))==length(ys))
-    }
+    stopifnot(length(z$x$layout$annotations)==0, nzchar(output$legende$html))
+    for (libelle in reperes$Modalite) stopifnot(grepl(libelle, output$legende$html, fixed=TRUE))
     sources <- vapply(z$x$layout$images, function(x) x$source, character(1))
     stopifnot(sum(startsWith(sources,"data:image/svg+xml;base64,"))==4)
     ellipses <- Filter(function(t) identical(t$fill,"toself"),z$x$data)
