@@ -62,7 +62,9 @@ carte_hode_ui <- function(id) {
       shiny::column(4, shiny::uiOutput(ns("choix_focus"))),
       shiny::column(4, shiny::checkboxInput(ns("ellipses"), "Ellipses de dispersion (repère 80 %)", FALSE))
     )),
-    shiny::div(class="carte-afdm-boite", plotly::plotlyOutput(ns("carte"), height="800px")),
+    shiny::div(class="hode-map-layout",
+      shiny::div(class="carte-afdm-boite", plotly::plotlyOutput(ns("carte"), height="800px")),
+      shiny::tags$aside(class="hode-legende", `aria-label`="Correspondance des pictogrammes", shiny::uiOutput(ns("legende")))),
     shiny::uiOutput(ns("resume")),
     shiny::p(class="note", "L’âge est une variable quantitative active : il participe à la construction des axes. Les quatre pictogrammes de poids restent visibles comme repères supplémentaires ; ils ne construisent pas les axes. Survolez les points ; tracez un rectangle pour zoomer ; double-cliquez pour réinitialiser la vue. Couleurs et formes distinguent les catégories. Les axes restent fixes lors des sélections, avec la même unité sur les deux dimensions. Les ellipses sont calculées sur les catégories entières, même lorsqu’une réponse est sélectionnée : repères de dispersion sous approximation normale, pas des intervalles de confiance ni des frontières de classification.")
   )
@@ -70,6 +72,20 @@ carte_hode_ui <- function(id) {
 
 carte_hode_server <- function(id) {
   with(carte_hode_donnees, shiny::moduleServer(id, function(input, output, session) {
+    output$legende <- shiny::renderUI({
+      shiny::req(input$variable)
+      section <- function(variable, titre) {
+        m <- modalites_afdm[modalites_afdm$Variable == variable, ]
+        shiny::div(class="hode-legende-section", shiny::h3(titre),
+          lapply(seq_len(nrow(m)), function(i) shiny::div(class="hode-legende-ligne",
+            shiny::tags$img(src=sources_pictogrammes[[m$Icone[i]]], alt="", `aria-hidden`="true"),
+            shiny::span(m$Modalite[i]))))
+      }
+      shiny::tagList(
+        if (input$variable != "Classe") section(input$variable, unname(noms_variables_afdm[input$variable])),
+        section("Classe", "Catégories de poids"),
+        shiny::p(class="note", "Les pictogrammes de poids sont des repères supplémentaires, toujours visibles sur la carte."))
+    })
     output$choix_focus <- shiny::renderUI({
       shiny::req(input$variable)
       modalites <- modalites_afdm$Modalite[modalites_afdm$Variable==input$variable]
@@ -128,35 +144,9 @@ carte_hode_server <- function(id) {
         x=modalites$Dimension_1[i], y=modalites$Dimension_2[i],
         sizex=taille, sizey=taille, xanchor="center", yanchor="middle", sizing="contain", layer="above")
     })
-    # Deux colonnes de libellés espacés, reliés aux positions AFDM inchangées.
-    plage_x <- range(c(individus_afdm$Dimension_1, modalites_afdm$Dimension_1)) * 1.35
-    plage_y <- range(c(individus_afdm$Dimension_2, modalites_afdm$Dimension_2)) * 1.2
-    ordre_x <- order(modalites$Dimension_1, modalites$Dimension_2)
-    gauche <- ordre_x[seq_len(ceiling(nrow(modalites) / 2))]
-    droite <- setdiff(ordre_x, gauche)
-    annotations <- list()
-    for (indices in list(gauche, droite)) {
-      indices <- indices[order(modalites$Dimension_2[indices], decreasing = TRUE)]
-      cote_gauche <- identical(sort(indices), sort(gauche))
-      positions_y <- seq(plage_y[2] - diff(plage_y) * .08,
-                         plage_y[1] + diff(plage_y) * .08, length.out = max(2, length(indices)))
-      for (j in seq_along(indices)) {
-        i <- indices[j]
-        annotations[[length(annotations) + 1]] <- list(
-          x = modalites$Dimension_1[i], y = modalites$Dimension_2[i], xref = "x", yref = "y",
-          ax = if (cote_gauche) plage_x[1] + diff(plage_x) * .015 else plage_x[2] - diff(plage_x) * .015,
-          ay = positions_y[j], axref = "x", ayref = "y",
-          text = paste(strwrap(modalites$Modalite[i], width = 19), collapse = "<br>"),
-          xanchor = if (cote_gauche) "left" else "right", yanchor = "middle",
-          align = if (cote_gauche) "left" else "right", showarrow = TRUE,
-          arrowhead = 0, arrowwidth = 1, arrowcolor = "#6E6A6080", standoff = 23,
-          bgcolor = "rgba(255,255,255,0.94)", borderpad = 4,
-          font = list(size = 13, color = "#3A3833"))
-      }
-    }
+    plage_x <- range(c(individus_afdm$Dimension_1, modalites_afdm$Dimension_1)) * 1.15
     carte <- plotly::layout(carte,
       images = images_modalites,
-      annotations = annotations,
       xaxis = list(title = paste0("Dimension 1 · ", round(resultat_afdm$eig[1, 2], 1), " %"), range = plage_x, zerolinecolor = "#1B1A1733", gridcolor = "#1B1A1714"),
       yaxis = list(title = paste0("Dimension 2 · ", round(resultat_afdm$eig[2, 2], 1), " %"), range = range(c(individus_afdm$Dimension_2, modalites_afdm$Dimension_2)) * 1.2, zerolinecolor = "#1B1A1733", gridcolor = "#1B1A1714", scaleanchor = "x", scaleratio = 1),
       font = list(family = "Nunito, sans-serif", color = "#3A3833", size = 12),
