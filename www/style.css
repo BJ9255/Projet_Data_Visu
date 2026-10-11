@@ -260,13 +260,15 @@ label, .control-label { color: var(--encre); font-weight: 800; font-size: 13px; 
 .carte-afdm-boite { position: relative; }
 .container-fluid:has(.tab-pane[data-value="profils"].active) { max-width: 1600px; }
 .hode-map-toolbar { display: flex; justify-content: flex-end; margin-bottom: 12px; }
-.hode-map-layout { display: grid; grid-template-columns: minmax(0, 1fr) 250px; gap: 20px; align-items: start; }
-.hode-legende { background: var(--papier-2); border: 1px solid #1B1A1720; border-radius: 14px; padding: 20px; }
-.hode-legende-section + .hode-legende-section { border-top: 1px solid #1B1A1720; margin-top: 22px; padding-top: 18px; }
-.hode-legende h3 { font-size: 17px; margin: 0 0 14px; }
-.hode-legende-ligne { display: flex; align-items: center; gap: 12px; margin: 12px 0; font-size: 15px; line-height: 1.35; }
-.hode-legende-ligne img { width: 42px; height: 42px; object-fit: contain; flex-shrink: 0; }
-@media (max-width: 900px) { .hode-map-layout { grid-template-columns: 1fr; } }
+.hode-map-layout { display: grid; grid-template-columns: minmax(0, 1fr) 190px; gap: 12px; align-items: start; }
+.hode-map-layout > * { min-width: 0; }
+.hode-legende { background: var(--papier-2); border: 1px solid #1B1A1720; border-radius: 12px; padding: 12px; }
+.hode-legende-section + .hode-legende-section { border-top: 1px solid #1B1A1720; margin-top: 14px; padding-top: 12px; }
+.hode-legende h3 { font-size: 14px; margin: 0 0 10px; line-height: 1.3; }
+.hode-legende-ligne { display: flex; align-items: center; gap: 8px; margin: 8px 0; font-size: 12px; line-height: 1.3; }
+.hode-legende-ligne img { display: block; width: 28px; height: 28px; max-width: 28px; object-fit: contain; flex-shrink: 0; }
+.hode-legende .note { font-size: 11px; line-height: 1.4; }
+@media (max-width: 600px) { .hode-map-layout { grid-template-columns: 1fr; } .hode-legende-ligne { display: inline-flex; margin: 6px 12px 6px 0; } }
 .hode-map.carte-agrandie { position: fixed; inset: 0; z-index: 10000; overflow: auto; padding: 20px; background: var(--papier); }
 body.carte-ouverte { overflow: hidden; }
 .hode-map.carte-agrandie .carte-afdm-boite .plotly { height: max(400px, calc(100dvh - 230px)) !important; }

@@ -24,8 +24,8 @@ ui <- fluidPage(
     tags$link(rel = "preconnect", href = "https://fonts.googleapis.com"),
     tags$link(rel = "stylesheet", href = "https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;600;700;800&display=swap"),
     tags$link(rel = "stylesheet", href = "https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css"),
-    tags$link(rel = "stylesheet", href = "style.css"),
-    tags$script(src = "animations.js")
+    tags$link(rel = "stylesheet", href = paste0("style.css?v=", unname(tools::md5sum("www/style.css")))),
+    tags$script(src = paste0("animations.js?v=", unname(tools::md5sum("www/animations.js"))))
   ),
   tags$nav(class = "ile-nav", `aria-label` = "Parcours de l’enquête",
     span(class = "marque", span(class = "marque-point"), "Habitudes & poids"),
