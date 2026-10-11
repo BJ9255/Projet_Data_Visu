@@ -132,6 +132,7 @@ ui <- fluidPage(
         rangee(carte("Vue d’ensemble des tests", uiOutput("tests_resume"),
           div(class = "encadre", "Ces 12 comparaisons sont exploratoires. Les p-values sont présentées sans correction pour les comparaisons multiples ; le seuil de 5 % s’applique à chaque test, pas à l’ensemble. Une p-value ne mesure pas la force du lien."))),
         tags$details(class = "details-methode", tags$summary("Pourquoi χ² ou Fisher ?"),
+          p("Le V de Cramér complète le test par une mesure descriptive d’intensité : V = √[χ² / (n × min(r − 1, c − 1))], où r et c sont les nombres de lignes et de colonnes non vides. Nous utilisons le χ² de Pearson sans correction de continuité ; V est non corrigé du biais et non ajusté sur les autres caractéristiques. Les dimensions des tableaux doivent être prises en compte dans les comparaisons."),
           p("Le χ² d’indépendance convient au croisement de deux variables qualitatives. Nous vérifions les effectifs attendus : aucun inférieur à 1 et au moins 80 % supérieurs ou égaux à 5. Si ces conditions ne sont pas satisfaites, nous utilisons le test exact de Fisher."),
           p("Dans les 12 tableaux de cet échantillon, les conditions retenues pour le χ² sont satisfaites. L’enquête est analysée comme une réponse par personne ; la représentativité de l’échantillon n’est pas établie."),
           p("Le test de Student compare des moyennes d’une variable quantitative entre deux groupes. Il ne répond pas directement à notre question sur la répartition des quatre catégories de poids.")),

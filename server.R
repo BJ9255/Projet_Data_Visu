@@ -158,7 +158,9 @@ server <- function(input, output, session) {
   output$test_resultat <- renderUI({
     t <- test_selection()
     tagList(
-      div(class = "tuiles", tuile(paste0("p ", fmt_p(t$p)), t$methode)),
+      div(class = "tuiles", tuile(paste0("p ", fmt_p(t$p)), t$methode),
+          tuile(fmt(t$v_cramer, 3), "V de Cramér · intensité")),
+      p(class = "note", "V va de 0 à 1 : une valeur plus élevée indique une association plus marquée dans ce tableau. Ce n’est ni un pourcentage expliqué, ni une preuve de causalité. Aucun seuil universel faible / moyen / fort n’est appliqué."),
       if (t$conditions) p(class = "note", paste0("χ² = ", fmt(t$chi2), " · degrés de liberté = ", t$ddl)),
       div(class = "encadre", strong(if (t$p < .05) "H₀ rejetée au seuil de 5 %. " else "H₀ non rejetée au seuil de 5 %. "),
           if (t$p < .05) "Une association est détectée entre cette caractéristique et la catégorie de poids. Ce test ne donne pas le sens d’une cause ni son importance."
@@ -180,8 +182,8 @@ server <- function(input, output, session) {
   output$tests_resume <- renderUI({
     div(class = "table-responsive", tags$table(class = "table table-associations",
       tags$caption("Variables qualitatives croisées avec les quatre catégories de poids · p-values brutes, non classées par importance"),
-      tags$thead(tags$tr(tags$th(scope = "col", "Caractéristique"), tags$th(scope = "col", "Test"), tags$th(scope = "col", "p-value"))),
+      tags$thead(tags$tr(tags$th(scope = "col", "Caractéristique"), tags$th(scope = "col", "Test"), tags$th(scope = "col", "p-value"), tags$th(scope = "col", "V de Cramér"))),
       tags$tbody(lapply(seq_len(nrow(table_tests)), function(i) tags$tr(tags$th(scope = "row", table_tests$Variable[i]),
-        tags$td(table_tests$methode[i]), tags$td(fmt_p(table_tests$p[i])))))))
+        tags$td(table_tests$methode[i]), tags$td(fmt_p(table_tests$p[i])), tags$td(fmt(table_tests$v_cramer[i], 3)))))))
   })
 }

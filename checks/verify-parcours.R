@@ -30,7 +30,10 @@ for (v in variables_qualitatives) {
     abs(t$chi2 - statistique) < 1e-10,
     abs(t$p - pchisq(statistique, ddl, lower.tail = FALSE)) < 1e-12,
     t$ddl == ddl)
+  stopifnot(abs(t$v_cramer - sqrt(statistique / (sum(tab) * min(nrow(tab)-1, ncol(tab)-1)))) < 1e-12)
 }
+stopifnot(abs(test_independance(matrix(c(10,0,0,10),2))$v_cramer-1)<1e-12,
+          abs(test_independance(matrix(c(10,10,10,10),2))$v_cramer)<1e-12)
 # Le choix de Fisher porte sur les attendus, pas sur les zéros observés.
 petit <- matrix(c(0, 2, 2, 0), nrow = 2)
 f <- test_independance(petit)

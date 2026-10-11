@@ -128,3 +128,15 @@ Notre contribution est une lecture interactive et argumentée de cet échantillo
 3. Répéter une comparaison en barres, l’explication d’un attendu dans le χ² et deux sélections sur la carte. Cela suffit pour montrer l’interactivité.
 4. Répartir les étapes entre les membres du groupe, avec une seule problématique commune.
 5. Vérifier le rendu sur l’ordinateur et le vidéoprojecteur de présentation. Les contrôles automatiques vérifient les calculs et les sorties Shiny, mais le navigateur n’a pas pu être inspecté pendant cette intervention.
+# Complément : intensité des associations
+
+« La p-value renseigne sur la significativité du test, tandis que le V de Cramér
+mesure l’intensité de l’association observée. Il est compris entre 0 et 1 et ne
+représente pas un pourcentage expliqué. Nous présentons les valeurs sans seuils
+automatiques faible / moyen / fort, car l’interprétation dépend du contexte et
+des dimensions des tableaux. Il s’agit d’associations non ajustées, sans conclusion
+causale. »
+
+Calcul : V = √[χ² / (n × min(r − 1, c − 1))], avec le χ² de Pearson sans correction
+de continuité. Version classique, non corrigée du biais.
+Référence : https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.contingency.association.html
