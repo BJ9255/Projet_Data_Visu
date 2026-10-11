@@ -29,6 +29,7 @@ test_independance <- function(tab) {
   }
   list(observe = tab, attendu = chi$expected, methode = methode, conditions = conditions,
        p = resultat$p.value, chi2 = unname(chi$statistic), ddl = unname(chi$parameter),
+       v_cramer = sqrt(unname(chi$statistic) / (sum(tab) * min(nrow(tab) - 1, ncol(tab) - 1))),
        minimum_attendu = min(chi$expected), part_attendus_5 = mean(chi$expected >= 5))
 }
 tests_independance <- setNames(lapply(variables_qualitatives, function(v)
@@ -36,7 +37,7 @@ tests_independance <- setNames(lapply(variables_qualitatives, function(v)
 table_tests <- bind_rows(lapply(variables_qualitatives, function(v) {
   t <- tests_independance[[v]]
   data.frame(var = v, Variable = unname(libelles[v]), methode = t$methode, p = t$p,
-             chi2 = t$chi2, ddl = t$ddl, conditions = t$conditions,
+             chi2 = t$chi2, ddl = t$ddl, v_cramer = t$v_cramer, conditions = t$conditions,
              minimum_attendu = t$minimum_attendu, part_attendus_5 = t$part_attendus_5)
 }))
 # P-values brutes : les 12 comparaisons sont exploratoires, sans correction multiple.
