@@ -1,5 +1,9 @@
 # Présentation M2 — Proportions, χ² et AFDM
 
+**Pour l’oral de 15 minutes avec la version actuelle du site : utiliser
+[SCRIPT_PRESENTATION_15_MIN.md](SCRIPT_PRESENTATION_15_MIN.md).**
+Le speech court ci-dessous est conservé comme aide-mémoire historique.
+
 ## Notre cadrage
 
 **Cible :** étudiants et acteurs de prévention souhaitant comprendre les associations entre habitudes de vie et catégories de poids.
