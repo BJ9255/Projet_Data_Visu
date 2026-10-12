@@ -67,6 +67,68 @@ server <- function(input, output, session) {
   observeEvent(input$nav, {
     if (input$nav %in% names(pages)) updateTabsetPanel(session, "pages", input$nav)
   })
+  
+  # --- PRÉDICTEUR PROBABILISTE MULTIVARIÉ (12 variables) ---
+  
+  modele_prediction <- reactive({
+    if (!requireNamespace("nnet", quietly = TRUE)) install.packages("nnet")
+    
+    nnet::multinom(Niveau_Obesite ~ Genre + Age + Antecedents_Familiaux + Repas_Principaux + 
+                     Frequence_Legumes + Fast_Food + Grignotage + Consommation_Liquide + 
+                     Activite_Physique + Temps_Ecrans + Fumeur + Moyen_Transport, 
+                   data = data_classes, trace = FALSE)
+  })
+  
+  probas_prediction <- reactive({
+    req(input$sim_genre, input$sim_age, input$sim_antecedents, input$sim_repas,
+        input$sim_legumes, input$sim_fastfood, input$sim_grignotage, input$sim_liquide,
+        input$sim_activite, input$sim_ecrans, input$sim_fumeur, input$sim_transport)
+    
+    nouveau_profil <- data.frame(
+      Genre = factor(input$sim_genre, levels = levels(data_classes$Genre)),
+      Age = factor(input$sim_age, levels = levels(data_classes$Age)),
+      Antecedents_Familiaux = factor(input$sim_antecedents, levels = levels(data_classes$Antecedents_Familiaux)),
+      Repas_Principaux = factor(input$sim_repas, levels = levels(data_classes$Repas_Principaux)),
+      Frequence_Legumes = factor(input$sim_legumes, levels = levels(data_classes$Frequence_Legumes)),
+      Fast_Food = factor(input$sim_fastfood, levels = levels(data_classes$Fast_Food)),
+      Grignotage = factor(input$sim_grignotage, levels = levels(data_classes$Grignotage)),
+      Consommation_Liquide = factor(input$sim_liquide, levels = levels(data_classes$Consommation_Liquide)),
+      Activite_Physique = factor(input$sim_activite, levels = levels(data_classes$Activite_Physique)),
+      Temps_Ecrans = factor(input$sim_ecrans, levels = levels(data_classes$Temps_Ecrans)),
+      Fumeur = factor(input$sim_fumeur, levels = levels(data_classes$Fumeur)),
+      Moyen_Transport = factor(input$sim_transport, levels = levels(data_classes$Moyen_Transport))
+    )
+    
+    predict(modele_prediction(), newdata = nouveau_profil, type = "probs")
+  })
+  
+  output$sim_resultat <- renderUI({
+    probs <- probas_prediction()
+    if (is.null(names(probs))) names(probs) <- levels(data$Niveau_Obesite)
+    
+    tagList(
+      div(class = "tuiles", 
+          tuile("Modèle Prédictif", "Régression multinomiale (12 variables)")),
+      p(style = "margin: 15px 0 10px 0;", "Probabilités estimées par le modèle pour ce profil complet :"),
+      div(class = "distribution-hero", style = "margin-bottom: 15px;",
+          lapply(names(probs), function(niv) {
+            p_val <- probs[[niv]]
+            div(style = paste0("width:", 100 * p_val, "%;background:", couleurs_niveau[[niv]]))
+          })
+      ),
+      div(class = "repartition-hero", 
+          lapply(names(probs), function(niv) {
+            p_val <- probs[[niv]]
+            div(
+              span(class = "pastille", style = paste0("background:", couleurs_niveau[[niv]])),
+              span(niv), 
+              strong(pct(p_val, 1))
+            )
+          })
+      )
+    )
+  })
+  
   output$explorer_barres <- renderPlotly({
     v <- req(input$explorer_var)
     barres_empilees(data_classes[[v]], libelles[[v]])

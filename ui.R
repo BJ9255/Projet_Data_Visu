@@ -164,6 +164,40 @@ ui <- fluidPage(
           h2("Des associations existent, mais leur lecture dépend du contexte."),
           p("Les répartitions des catégories de poids varient selon les réponses, notamment pour la consommation de légumes. Le χ² détecte une association dans ce tableau. L’AFDM permet d’explorer les caractéristiques conjointement, sur une projection partielle. Ces résultats décrivent l’échantillon et ne permettent pas d’établir des causes.")),
         div(class = "resultats-grille reveal", resultats_cles_ui()),
+        
+        rangee(
+          carte("Bonus : Simulateur prédictif de profil ", largeur = 12, sous_titre = "Combinez l'ensemble des critères de l'enquête : le modèle statistique estime en direct la probabilité de chaque catégorie de poids",
+                div(class = "row",
+                    column(4,
+                           selectInput("sim_genre", "Sexe déclaré", choices = levels(data$Genre)),
+                           selectInput("sim_age", "Tranche d'âge", choices = levels(data_classes$Age)),
+                           selectInput("sim_antecedents", "Antécédents familiaux", choices = levels(data$Antecedents_Familiaux)),
+                           selectInput("sim_repas", "Repas principaux / jour", choices = levels(data$Repas_Principaux))
+                    ),
+                    column(4,
+                           selectInput("sim_legumes", "Consommation de légumes", choices = levels(data$Frequence_Legumes)),
+                           selectInput("sim_fastfood", "Consommation de fast-food", choices = levels(data$Fast_Food)),
+                           selectInput("sim_grignotage", "Grignotage", choices = levels(data$Grignotage)),
+                           selectInput("sim_liquide", "Boisson par jour", choices = levels(data$Consommation_Liquide))
+                    ),
+                    column(4,
+                           selectInput("sim_activite", "Activité physique", choices = levels(data$Activite_Physique)),
+                           selectInput("sim_ecrans", "Temps d'écran", choices = levels(data$Temps_Ecrans)),
+                           selectInput("sim_fumeur", "Tabac", choices = levels(data$Fumeur)),
+                           selectInput("sim_transport", "Moyen de transport", choices = levels(data$Moyen_Transport))
+                    )
+                ),
+                tags$hr(style = "border-color: rgba(0,0,0,0.1); margin: 20px 0;"),
+                uiOutput("sim_resultat"),
+                
+                div(class = "encadre", style = "margin-top: 20px; background: #fff8f8; border-color: #f5c6cb;",
+                    strong("Précautions d'interprétation et limites du modèle : "),
+                    p(style = "margin-top: 5px; margin-bottom: 0; font-size: 0.95em;",
+                      "Ce simulateur repose sur une régression logistique multinomiale multivariée ajustée à partir d'un échantillon  déclaratif de 1 610 répondants en Turquie. Il ne s'agit pas d'un outil de diagnostic médical, ni d'une preuve de causalité (association ≠ cause).")
+                )
+          )
+        ),
+        
         rangee(
           carte("Trois réflexes de lecture", largeur = 6,
             tags$ol(class = "etapes",
