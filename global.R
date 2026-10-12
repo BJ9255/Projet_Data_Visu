@@ -7,7 +7,7 @@
 # Packages : installation automatique de ceux qui manquent
 # Les packages de modélisation sont appelés avec "package::fonction" pour ne pas masquer le tidyverse
 # ------------------------------------------------------------
-packages_charges <- c("shiny", "tidyverse", "readxl", "plotly", "FactoMineR")
+packages_charges <- c("shiny", "tidyverse", "readxl", "plotly", "FactoMineR", "caret", "nnet")
 packages_requis  <- packages_charges
 
 packages_manquants <- setdiff(packages_requis, rownames(installed.packages()))
@@ -138,3 +138,21 @@ part_risque <- function(v) {
 # Carte interactive et parcours fondé sur les méthodes vues en cours.
 source("R/carte_hode.R", local=TRUE)
 source("R/parcours.R", local=TRUE)
+
+# ------------------------------------------------------------
+# Modèle de régression multinomiale optimisé (Validation croisée 10 blocs)
+# ------------------------------------------------------------
+set.seed(123)
+train_control <- trainControl(method = "cv", number = 10)
+tune_grid <- expand.grid(decay = c(0, 0.01, 0.1, 1))
+
+modele_optimal <- train(
+  Niveau_Obesite ~ Genre + Age + Antecedents_Familiaux + Repas_Principaux + 
+    Frequence_Legumes + Fast_Food + Grignotage + Consommation_Liquide + 
+    Activite_Physique + Temps_Ecrans + Fumeur + Moyen_Transport,
+  data = data_classes,
+  method = "multinom",
+  trControl = train_control,
+  tuneGrid = tune_grid,
+  trace = FALSE
+)

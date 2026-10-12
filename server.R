@@ -21,6 +21,7 @@ interactif <- function(p, tooltip = "text", legende = "haut", source = "A") {
            hoverlabel = list(bgcolor = "#FFFFFF", bordercolor = encre, font = list(family = police, color = encre, size = 13)),
            legend = list(font = list(size = 12.5, color = encre_2))) %>%
     config(displaylogo = FALSE, locale = "fr", displayModeBar = FALSE)
+  
   switch(legende,
          haut = layout(g, legend = list(orientation = "h", x = 0, xanchor = "left", y = 1.02, yanchor = "bottom",
                                         title = list(text = "")), margin = list(t = 40)),
@@ -55,11 +56,11 @@ barres_empilees <- function(groupe, titre, effectifs = TRUE) {
 # Tableau lisible des effectifs observés ou attendus.
 tableau_effectifs_ui <- function(m, attendus = FALSE) {
   div(class = "table-responsive", tags$table(class = "table table-associations",
-    tags$caption(if (attendus) "Effectifs attendus sous l’hypothèse d’indépendance" else "Effectifs observés dans l’échantillon"),
-    tags$thead(tags$tr(tags$th(scope = "col", "Réponse"), lapply(colnames(m), function(n) tags$th(scope = "col", n)), tags$th(scope = "col", "Total"))),
-    tags$tbody(lapply(seq_len(nrow(m)), function(i) tags$tr(tags$th(scope = "row", rownames(m)[i]),
-      lapply(m[i, ], function(n) tags$td(if (attendus) fmt(n, 1) else as.integer(n))), tags$td(fmt(sum(m[i, ]), 0))))),
-    tags$tfoot(tags$tr(tags$th(scope = "row", "Total"), lapply(colSums(m), function(n) tags$td(fmt(n, 0))), tags$td(fmt(sum(m), 0))))))
+                                             tags$caption(if (attendus) "Effectifs attendus sous l’hypothèse d’indépendance" else "Effectifs observés dans l’échantillon"),
+                                             tags$thead(tags$tr(tags$th(scope = "col", "Réponse"), lapply(colnames(m), function(n) tags$th(scope = "col", n)), tags$th(scope = "col", "Total"))),
+                                             tags$tbody(lapply(seq_len(nrow(m)), function(i) tags$tr(tags$th(scope = "row", rownames(m)[i]),
+                                                                                                     lapply(m[i, ], function(n) tags$td(if (attendus) fmt(n, 1) else as.integer(n))), tags$td(fmt(sum(m[i, ]), 0))))),
+                                             tags$tfoot(tags$tr(tags$th(scope = "row", "Total"), lapply(colSums(m), function(n) tags$td(fmt(n, 0))), tags$td(fmt(sum(m), 0))))))
 }
 
 server <- function(input, output, session) {
@@ -68,17 +69,7 @@ server <- function(input, output, session) {
     if (input$nav %in% names(pages)) updateTabsetPanel(session, "pages", input$nav)
   })
   
-  # --- PRÉDICTEUR PROBABILISTE MULTIVARIÉ (12 variables) ---
-  
-  modele_prediction <- reactive({
-    if (!requireNamespace("nnet", quietly = TRUE)) install.packages("nnet")
-    
-    nnet::multinom(Niveau_Obesite ~ Genre + Age + Antecedents_Familiaux + Repas_Principaux + 
-                     Frequence_Legumes + Fast_Food + Grignotage + Consommation_Liquide + 
-                     Activite_Physique + Temps_Ecrans + Fumeur + Moyen_Transport, 
-                   data = data_classes, trace = FALSE)
-  })
-  
+  # --- PRÉDICTEUR PROBABILISTE ---
   probas_prediction <- reactive({
     req(input$sim_genre, input$sim_age, input$sim_antecedents, input$sim_repas,
         input$sim_legumes, input$sim_fastfood, input$sim_grignotage, input$sim_liquide,
@@ -99,7 +90,10 @@ server <- function(input, output, session) {
       Moyen_Transport = factor(input$sim_transport, levels = levels(data_classes$Moyen_Transport))
     )
     
-    predict(modele_prediction(), newdata = nouveau_profil, type = "probs")
+    res <- predict(modele_optimal, newdata = nouveau_profil, type = "prob")
+    probs <- as.numeric(res[1, ])
+    names(probs) <- colnames(res)
+    return(probs)
   })
   
   output$sim_resultat <- renderUI({
@@ -108,7 +102,7 @@ server <- function(input, output, session) {
     
     tagList(
       div(class = "tuiles", 
-          tuile("Modèle Prédictif", "Régression multinomiale (12 variables)")),
+          tuile("Simulateur de tendances", "Régression multinomiale (Validée par CV 10 blocs)")),
       p(style = "margin: 15px 0 10px 0;", "Probabilités estimées par le modèle pour ce profil complet :"),
       div(class = "distribution-hero", style = "margin-bottom: 15px;",
           lapply(names(probs), function(niv) {
@@ -129,6 +123,12 @@ server <- function(input, output, session) {
     )
   })
   
+  # Calcul dynamique de la meilleure accuracy (en pourcentage arrondi à 1 décimale)
+  output$texte_accuracy <- renderText({
+    acc <- max(modele_optimal$results$Accuracy) * 100
+    paste0("Le modèle sous-jacent a été validé par validation croisée à 10 blocs (exactitude / accuracy globale de ", round(acc, 1), "% sur l'échantillon).")
+  })
+  
   output$explorer_barres <- renderPlotly({
     v <- req(input$explorer_var)
     barres_empilees(data_classes[[v]], libelles[[v]])
@@ -137,8 +137,8 @@ server <- function(input, output, session) {
     v <- req(input$explorer_var)
     r <- part_risque(v) %>% arrange(desc(risque))
     a_retenir(HTML(paste0("Parts observées de surpoids ou d’obésité : <strong>", pct(r$risque[1]), "</strong> pour « ",
-      r$modalite[1], " » (n = ", r$n[1], ") et <strong>", pct(r$risque[nrow(r)]), "</strong> pour « ",
-      r$modalite[nrow(r)], " » (n = ", r$n[nrow(r)], "). Ces écarts ne démontrent pas un effet causal.")))
+                          r$modalite[1], " » (n = ", r$n[1], ") et <strong>", pct(r$risque[nrow(r)]), "</strong> pour « ",
+                          r$modalite[nrow(r)], " » (n = ", r$n[nrow(r)], "). Ces écarts ne démontrent pas un effet causal.")))
   })
   output$observer_suite <- renderUI({
     v <- req(input$explorer_var)
@@ -169,9 +169,9 @@ server <- function(input, output, session) {
   output$test_conditions <- renderUI({
     t <- test_selection()
     div(class = "message", div(strong("Conditions sur les effectifs attendus"),
-      span(paste0("Minimum : ", fmt(t$minimum_attendu, 1), " ; ", pct(t$part_attendus_5),
-        " des cellules ont un effectif attendu ≥ 5. ",
-        if (t$conditions) "Conditions retenues satisfaites : χ² utilisé." else "Conditions non satisfaites : Fisher utilisé."))))
+                               span(paste0("Minimum : ", fmt(t$minimum_attendu, 1), " ; ", pct(t$part_attendus_5),
+                                           " des cellules ont un effectif attendu ≥ 5. ",
+                                           if (t$conditions) "Conditions retenues satisfaites : χ² utilisé." else "Conditions non satisfaites : Fisher utilisé."))))
   })
   output$test_tableau <- renderUI({
     t <- test_selection()
@@ -179,9 +179,9 @@ server <- function(input, output, session) {
   })
   output$tests_resume <- renderUI({
     div(class = "table-responsive", tags$table(class = "table table-associations",
-      tags$caption("Variables qualitatives croisées avec les quatre catégories de poids · p-values brutes, non classées par importance"),
-      tags$thead(tags$tr(tags$th(scope = "col", "Caractéristique"), tags$th(scope = "col", "Test"), tags$th(scope = "col", "p-value"))),
-      tags$tbody(lapply(seq_len(nrow(table_tests)), function(i) tags$tr(tags$th(scope = "row", table_tests$Variable[i]),
-        tags$td(table_tests$methode[i]), tags$td(fmt_p(table_tests$p[i])))))))
+                                               tags$caption("Variables qualitatives croisées avec les quatre catégories de poids · p-values brutes, non classées par importance"),
+                                               tags$thead(tags$tr(tags$th(scope = "col", "Caractéristique"), tags$th(scope = "col", "Test"), tags$th(scope = "col", "p-value"))),
+                                               tags$tbody(lapply(seq_len(nrow(table_tests)), function(i) tags$tr(tags$th(scope = "row", table_tests$Variable[i]),
+                                                                                                                 tags$td(table_tests$methode[i]), tags$td(fmt_p(table_tests$p[i])))))))
   })
 }
